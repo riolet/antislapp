@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
+import sys
 import web
 BASE_FOLDER = os.path.dirname(__file__)
+sys.path.append(os.path.join(BASE_FOLDER, os.path.pardir))  # this could be executed from any directory
 
 
 urls = ("/fulfill", "pages.fulfill.Fulfill",
