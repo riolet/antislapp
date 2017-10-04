@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import os
 import web
+BASE_FOLDER = os.path.dirname(__file__)
+
 
 urls = ("/fulfill", "pages.fulfill.Fulfill",
         "/.*", "pages.debug.Debug")
 app = web.application(urls, globals())
-render = web.template.render('templates/')
+render = web.template.render(os.path.join(BASE_FOLDER, 'templates'))
 web.config.session_parameters['cookie_path'] = "/"
 
 if web.config.get('_session') is None:
