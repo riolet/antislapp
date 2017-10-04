@@ -1,0 +1,140 @@
+$def with (sorted, env, svars, session, config, ctx)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>DEBUG</title>
+</head>
+<body>
+<div class="ui container">
+  <div class="ui segment">
+    <h1 class="header">Environment Variables</h1>
+    <table class="ui very compact definition table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+      $for k in sorted(env.keys()):
+        <tr>
+          <td>$k</td>
+          <td>$env[k]</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ui segment">
+    <h1 class="header">Self variables</h1>
+    <table class="ui very compact definition table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+      $for k in sorted(svars.keys()):
+        <tr>
+          <td>$k</td>
+          $if k == "user":
+            <td>
+              <table class="ui very compact definition table">
+                <thead>
+                  <tr>
+                    <th>Key</th>
+                    <th>Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                $for j in sorted(svars[k].keys()):
+                  <tr>
+                    <td>$j</td>
+                    <td>$svars[k][j]</td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+          $else:
+            <td>$svars[k]</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ui segment">
+    <h1 class="header">Session variables</h1>
+    <table class="ui very compact definition table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+      $for k in sorted(session.keys()):
+        <tr>
+          <td>$k</td>
+          <td>$session[k]</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ui segment">
+    <h1 class="header">Config variables</h1>
+    <table class="ui very compact definition table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+      $for k in sorted(config.keys()):
+        <tr>
+          <td>$k</td>
+          $if k == "session_parameters":
+            <td>
+              <table class="ui very compact definition table">
+                <thead>
+                  <tr>
+                    <th>Key</th>
+                    <th>Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                $for j in sorted(config[k].keys()):
+                  <tr>
+                    <td>$j</td>
+                    <td>$config[k][j]</td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+          $else:
+            <td>$config[k]</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ui segment">
+    <h1 class="header">Context variables</h1>
+    <table class="ui very compact definition table">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+      $for k in sorted(ctx.keys()):
+        <tr>
+          <td>$k</td>
+          <td>$ctx[k]</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body>
+</html>

@@ -1,2 +1,2 @@
 web.py==0.38
-requests<=2.18
+requests>=2.18
