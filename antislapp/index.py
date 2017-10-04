@@ -12,7 +12,8 @@ render = web.template.render(os.path.join(BASE_FOLDER, 'templates'))
 web.config.session_parameters['cookie_path'] = "/"
 
 if web.config.get('_session') is None:
-    session = web.session.Session(app, web.session.DiskStore('sessions'), initializer={'count': 0})
+    session_store = web.session.DiskStore(os.path.join(BASE_FOLDER, 'sessions'))
+    session = web.session.Session(app, session_store, initializer={'count': 0})
     web.config._session = session
 else:
     session = web.config._session
