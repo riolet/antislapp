@@ -99,8 +99,13 @@ data/
 
 temp.*
 
+# disk store session data
+sessions/
+
 # certificates and keys
 *.pem
+*.crt
+*.key
 
 # don't include plugins by default
 plugins_omit/
