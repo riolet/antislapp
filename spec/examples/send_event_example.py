@@ -25,17 +25,22 @@ except ImportError:
     )
     import apiai
 
-CLIENT_ACCESS_TOKEN = 'YOUR_ACCESS_TOKEN'
+CLIENT_ACCESS_TOKEN = os.environ.get('CLIENT_TOKEN', 'YOUR_ACCESS_TOKEN')
+
+
+# This example sends an event request to the AI server, and reports the response.
+# If the event name matches an intent that has that event name as a trigger,
+# The response text/speech will be the response of that intent firing.
 
 
 def main():
     ai = apiai.ApiAI(CLIENT_ACCESS_TOKEN)
 
-    request = ai.event_request(apiai.events.Event("my_custom_event"))
+    request = ai.event_request(apiai.events.Event("hangman-program"))
 
     request.lang = 'en'  # optional, default value equal 'en'
 
-    request.session_id = "<SESSION ID, UNIQUE FOR EACH USER>"
+    request.session_id = "b3e7146acd1f9e3a4f3c05a5e1d850a3054b"
 
     response = request.getresponse()
 

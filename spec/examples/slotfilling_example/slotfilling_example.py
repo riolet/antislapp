@@ -36,7 +36,7 @@ except ImportError:
 
 # demo agent acess token: e5dc21cab6df451c866bf5efacb40178
 
-CLIENT_ACCESS_TOKEN = 'YOUR_ACCESS_TOKEN'
+CLIENT_ACCESS_TOKEN = os.environ.get('CLIENT_TOKEN', 'YOUR_ACCESS_TOKEN')
 
 
 def main():

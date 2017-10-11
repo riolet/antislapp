@@ -25,7 +25,10 @@ except ImportError:
     )
     import apiai
 
-CLIENT_ACCESS_TOKEN = 'YOUR_ACCESS_TOKEN'
+CLIENT_ACCESS_TOKEN = os.environ.get('CLIENT_TOKEN', 'YOUR_ACCESS_TOKEN')
+
+
+# This exchange represnts sending a message to the server to see how it would respond.
 
 
 def main():
@@ -35,7 +38,7 @@ def main():
 
     request.lang = 'de'  # optional, default value equal 'en'
 
-    request.session_id = "<SESSION ID, UNIQUE FOR EACH USER>"
+    request.session_id = "b3e7146acd1f9e3a4f3c05a5e1d850a3054b"
 
     request.query = "Hello"
 

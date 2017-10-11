@@ -1,9 +1,9 @@
 from antislapp.pages import fulfill
 
 
-sample_data = '{"id":"9975da59-64fb-4c65-a4e8-e98e55ee9a82","timestamp":"2017-10-04T17:57:43.466Z","lang":"en","result":{"source":"agent","resolvedQuery":"weather for today","speech":"","action":"","actionIncomplete":false,"parameters":{"date":"2017-10-04","geo-city":""},"contexts":[],"metadata":{"intentId":"5fcddff3-761b-47d8-a551-acf6bbbfb7ac","webhookUsed":"true","webhookForSlotFillingUsed":"false","intentName":"Weather"},"fulfillment":{"speech":"I\\u0027m not sure about the weather on 2017-10-04","messages":[{"type":0,"id":"1222c926-dc5d-4d10-9635-8cf5ea305c30","speech":"I\\u0027m not sure about the weather on 2017-10-04"}]},"score":1.0},"status":{"code":200,"errorType":"success"},"sessionId":"a00ab1e4-269e-4a3a-bf67-702877dfbb1c"}'
-# data = json.loads(sample_data)
-data = {
+sample_data1 = '{"id":"9975da59-64fb-4c65-a4e8-e98e55ee9a82","timestamp":"2017-10-04T17:57:43.466Z","lang":"en","result":{"source":"agent","resolvedQuery":"weather for today","speech":"","action":"","actionIncomplete":false,"parameters":{"date":"2017-10-04","geo-city":""},"contexts":[],"metadata":{"intentId":"5fcddff3-761b-47d8-a551-acf6bbbfb7ac","webhookUsed":"true","webhookForSlotFillingUsed":"false","intentName":"Weather"},"fulfillment":{"speech":"I\\u0027m not sure about the weather on 2017-10-04","messages":[{"type":0,"id":"1222c926-dc5d-4d10-9635-8cf5ea305c30","speech":"I\\u0027m not sure about the weather on 2017-10-04"}]},"score":1.0},"status":{"code":200,"errorType":"success"},"sessionId":"a00ab1e4-269e-4a3a-bf67-702877dfbb1c"}'
+# data1 = json.loads(sample_data)
+data1 = {
     u'id': u'9975da59-64fb-4c65-a4e8-e98e55ee9a82',
     u'lang': u'en',
     u'result': {
@@ -148,3 +148,12 @@ data4 = {
     u'sessionId': u'c15a6d3a-305c-3f00-af2c-3282aef39aa3',
     u'status': {u'code': 200, u'errorType': u'success'},
     u'timestamp': u'2017-10-04T22:15:28.531Z'}
+
+
+def test_extract():
+    ex = fulfill.Fulfill.extract_parameters
+
+    assert ex(data1) == {u'date': u'2017-10-04', u'geo-city': u''}
+    assert ex(data2) == {u'date': u'2017-10-05', u'geo-city': u'Austin'}
+    assert ex(data3) == {u'date': u'2017-10-04', u'geo-city': u'Paris'}
+    assert ex(data4) == {u'date': u'2017-10-05', u'date-period': u'', u'geo-city': u'Paris'}

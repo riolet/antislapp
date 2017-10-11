@@ -27,13 +27,13 @@ except ImportError:
 
 import uuid
 
-CLIENT_ACCESS_TOKEN = 'YOUR_ACCESS_TOKEN'
+CLIENT_ACCESS_TOKEN = os.environ.get('CLIENT_TOKEN', 'YOUR_ACCESS_TOKEN')
 
 
 def main():
     ai = apiai.ApiAI(CLIENT_ACCESS_TOKEN)
 
-    # some unuque session id for user identification
+    # some unique session id for user identification
     session_id = uuid.uuid4().hex
 
     entries = [
