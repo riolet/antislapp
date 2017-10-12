@@ -18,35 +18,23 @@ class Fulfill:
             er = traceback.format_exc()
             f.write(er)
             f.write("\n==== data ====\n")
-            pprint.pprint(data, f)
+            try:
+                pprint.pprint(json.loads(data), f)
+            except:
+                print("(json decode failed)")
+                pprint.pprint(data, f)
             f.write("\n==== end ====\n")
-
-    def GET(self):
-        web.header("Content-Type", "application/json")
-        return json.dumps({'speech': 'Speech Response get', 'displayText': 'Display Text Response get'})
 
     @staticmethod
     def extract_parameters(data):
         return data.get('result', {}).get('parameters', {})
 
+    @staticmethod
+    def extract_default_response(data):
+        return data.get('result', {}).get('fulfillment', {}).get('speech', "")
 
     def POST(self):
         raw_data = web.data()
-        try:
-            raise ValueError
-        except:
-            self.dump_error(raw_data)
-
-        data = json.loads(raw_data)
-        params = Fulfill.extract_parameters(data)
-        program = params.get('programs')
-        if program == 'hangman':
-            followupEvent = {'name': 'starthangman', 'data':{}}
-        elif program == 'lamprepair':
-            followupEvent = {'name': 'startlamp', 'data':{}}
-        else:
-            followupEvent = {'name': 'startoops', 'data':{}}
-
         response = {
             'speech': 'Speech Response post',  # String. Response to the request.
             'displayText': 'Display Text Response post',  # String. Text displayed by client.
@@ -58,7 +46,16 @@ class Fulfill:
             # eg: {"name":"<event_name>","data":{"<parameter_name>":"<parameter_value>"}}
         }
 
-        response['followupEvent'] = followupEvent
+        try:
+            data = json.loads(raw_data)
+            params = Fulfill.extract_parameters(data)
+            def_response = Fulfill.extract_default_response(data)
+            response_text = "default: {0}, params: {1}".format(repr(def_response), repr(params))
+            response['displayText'] = response_text
+        except:
+            pass
+
+        self.dump_error(raw_data)
 
         web.header("Content-Type", "application/json")
         return json.dumps(response)

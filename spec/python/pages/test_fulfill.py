@@ -157,3 +157,11 @@ def test_extract():
     assert ex(data2) == {u'date': u'2017-10-05', u'geo-city': u'Austin'}
     assert ex(data3) == {u'date': u'2017-10-04', u'geo-city': u'Paris'}
     assert ex(data4) == {u'date': u'2017-10-05', u'date-period': u'', u'geo-city': u'Paris'}
+
+def test_def_response():
+    ex = fulfill.Fulfill.extract_default_response
+
+    assert ex(data1) == u"I'm not sure about the weather on 2017-10-04"
+    assert ex(data2) == u"I don't know the weather for 2017-10-05 in Austin"
+    assert ex(data3) == u"I don't know the weather for 2017-10-04 in Paris"
+    assert ex(data4) == u''
