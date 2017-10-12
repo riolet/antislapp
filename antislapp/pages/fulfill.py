@@ -12,7 +12,7 @@ class Fulfill:
     def __init__(self):
         pass
 
-    def dump_error(self, data):
+    def dump_error(self, data, response):
         with file(Fulfill.outfile, 'w') as f:
             f.write("\n==== error ====\n")
             er = traceback.format_exc()
@@ -23,6 +23,8 @@ class Fulfill:
             except:
                 print("(json decode failed)")
                 pprint.pprint(data, f)
+            f.write("\n==== response ====\n")
+            pprint.pprint(response)
             f.write("\n==== end ====\n")
 
     @staticmethod
@@ -52,10 +54,11 @@ class Fulfill:
             def_response = Fulfill.extract_default_response(data)
             response_text = "default: {0}, params: {1}".format(repr(def_response), repr(params))
             response['displayText'] = response_text
+            response['speech'] = response_text
         except:
             pass
 
-        self.dump_error(raw_data)
+        self.dump_error(raw_data, response)
 
         web.header("Content-Type", "application/json")
         return json.dumps(response)
