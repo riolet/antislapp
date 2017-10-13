@@ -1,3 +1,5 @@
+import os
+import requests
 """
 
 Endpoints can be explored (and tested) on http://developer.canlii.org/io-docs
@@ -5,7 +7,7 @@ Endpoints available:
 
 ---  case browser ---
 
-GET Get Databases List (language)
+GET Get Case Databases List (language)
     /v1/caseBrowse/:language/
     List all the databases supported by the API
 
@@ -45,7 +47,7 @@ GET Get Cited Legislations Teaser (language, database, case)
 
 ---  legislation browse  ---
 
-GET Get Databases List (language)
+GET Get Legislation Databases List (language)
     /v1/legislationBrowse/:language/
     List all the databases supported by the API
 
@@ -64,6 +66,21 @@ GET Search (language) [offset, resultCount, fulltext]
     The search endpoint allow the user to search for cases and legislations matching a search query
 
 """
+API_KEY = os.environ.get("CANLII_KEY", "")
+CASE_DATABASE_LIST = '/v1/caseBrowse/{{language}}/?api_key={key}'.format(key=API_KEY)
+CASE_LIST = '/v1/caseBrowse/{{language}}/{{database}}/?api_key={key}'.format(key=API_KEY)
+CASE_METADATA = '/v1/caseBrowse/{{language}}/{{database}}/{{case_id}}/?api_key={key}'.format(key=API_KEY)
+CITING_CASES = '/v1/caseCitator/{{language}}/{{database}}/{{case_id}}/citingCases?api_key={key}'.format(key=API_KEY)
+CITING_CASES_TEASER = '/v1/caseCitatorTease/{{language}}/{{database}}/{{case_id}}/citingCases?api_key={key}'.format(key=API_KEY)
+CITED_CASES = '/v1/caseCitator/{{language}}/{{database}}/{{case_id}}/citedCases?api_key={key}'.format(key=API_KEY)
+CITED_CASES_TEASER = '/v1/caseCitatorTease/{{language}}/{{database}}/{{case_id}}/citedCases?api_key={key}'.format(key=API_KEY)
+CITED_LEGISLATION = '/v1/caseCitator/{{language}}/{{database}}/{{case_id}}/citedLegislations?api_key={key}'.format(key=API_KEY)
+CITED_LEGISLATION_TEASER = '/v1/caseCitatorTease/{{language}}/{{database}}/{{case_id}}/?api_key={key}'.format(key=API_KEY)
+LEGISLATION_DATABASE_LIST = '/v1/legislationBrowse/{{language}}/?api_key={key}'.format(key=API_KEY)
+LEGISLATION_LIST = '/v1/legislationBrowse/{{language}}/{{database}}/?api_key={key}'.format(key=API_KEY)
+LEGISLATION_METADATA = '/v1/legislationBrowse/{{language}}/{{database}}/{{legislation_id}}/?api_key={key}'.format(key=API_KEY)
+SEARCH = '/v1/search/{{language}}/?api_key={key}'.format(key=API_KEY)
+
 
 # function to do search
 
@@ -72,3 +89,7 @@ GET Search (language) [offset, resultCount, fulltext]
 # function to retrieve case text via URL
 
 # function to filter case text to remove header, footer, etc.  (And divide into paragraphs??)
+
+#...or should I just manually find a few cases for each category?
+
+def get_case_database_list():
