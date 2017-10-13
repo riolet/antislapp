@@ -40,7 +40,7 @@ data2 = {
     u'id': u'848e2b19-6a44-4df8-9328-e1d5aeba5b24',
     u'lang': u'en',
     u'result': {
-        u'action': u'',
+        u'action': u'bogus',
         u'actionIncomplete': False,
         u'contexts': [],
         u'fulfillment': {
@@ -73,7 +73,7 @@ data3 = {
     u'id': u'443f92e4-547a-4fa6-b045-2680e0db487d',
     u'lang': u'en',
     u'result': {
-        u'action': u'',
+        u'action': u'checking',
         u'actionIncomplete': False,
         u'contexts': [
             {u'lifespan': 5,
@@ -165,3 +165,29 @@ def test_def_response():
     assert ex(data2) == u"I don't know the weather for 2017-10-05 in Austin"
     assert ex(data3) == u"I don't know the weather for 2017-10-04 in Paris"
     assert ex(data4) == u''
+
+def test_extract_action():
+    ex = fulfill.Fulfill.extract_action
+    assert ex(data1) == u''
+    assert ex(data2) == u'bogus'
+    assert ex(data3) == u'checking'
+    assert ex(data4) == u''
+
+def test_join_list():
+    ex = fulfill.Fulfill.join_list
+    assert ex([]) == ''
+    assert ex(['a']) == 'a'
+    assert ex(['a', 'b']) == 'a and b'
+    assert ex(['a', 'b', 'c']) == 'a, b, and c'
+    assert ex(['a', 'b', 'c', 'd']) == 'a, b, c, and d'
+
+def test_summarize():
+    ex = fulfill.Fulfill.summarize
+    params = {}
+    assert ex(params) == "So, to summarize: you have not been sued and your words were untrue"
+
+    params = {'sued': True, 'truth': True, 'truth-evidence': False, 'absolute': False, 'qualified': True}
+    assert ex(params) == "So, to summarize: you have been sued, " \
+                         "your words were true but you have no proof, " \
+                         "you weren't in a position of absolute privilege, " \
+                         "and you were in a position of qualified privilege"

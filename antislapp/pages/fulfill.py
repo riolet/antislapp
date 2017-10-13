@@ -29,11 +29,89 @@ class Fulfill:
 
     @staticmethod
     def extract_parameters(data):
-        return data.get('result', {}).get('parameters', {})
+        params = data.get('result', {}).get('parameters', {})
+        for key in params:
+            if params[key].lower() == 'false':
+                params[key] = False
+            if params[key].lower() == 'true':
+                params[key] = True
+        return params
 
     @staticmethod
     def extract_default_response(data):
         return data.get('result', {}).get('fulfillment', {}).get('speech', "")
+
+    @staticmethod
+    def extract_action(data):
+        return data.get('result', {}).get('action', '')
+
+    @staticmethod
+    def join_list(items):
+        l = len(items)
+        if l == 0:
+            joined = ''
+        elif l == 1:
+            joined = items[0]
+        elif l == 2:
+            joined = "{} and {}".format(*items)
+        else:
+            joined = "{}, and {}".format(", ".join(items[:-1]), items[-1])
+        return joined
+
+    @staticmethod
+    def summarize(params):
+        if params.get('sued', False):
+            sued = 'you have been sued'
+        else:
+            sued = "you have not been sued"
+
+        if params.get('truth', False):
+            if params.get('truth-evidence'):
+                truth = "your words were true and you have some proof"
+            else:
+                truth = "your words were true but you have no proof"
+        else:
+            truth = "your words were untrue"
+
+        if 'absolute' in params:
+            if params['absolute']:
+                if params.get('abspriv', False):
+                    absolute = 'you were in a position of absolute privilege'
+                else:
+                    absolute = 'you were in a position of privilege but repeated yourself after the privilege ended'
+            else:
+                absolute = "you weren't in a position of absolute privilege"
+        else:
+            absolute = None
+
+        if 'qualified' in params:
+            if params['qualified']:
+                qualified = 'you were in a position of qualified privilege'
+            else:
+                qualified = "you weren't in a position of qualified privilege"
+        else:
+            qualified = None
+
+        if 'comment' in params:
+            if params['comment']:
+                comment = 'you were expressing your opinion on a matter of public interest'
+            else:
+                comment = "it didn't qualify as fair comment"
+        else:
+            comment = None
+
+        if 'journalist' in params:
+            if params['journalist']:
+                journalist = 'you were commenting on an urgent matter of public interest'
+            else:
+                journalist = 'you didn\'t qualify for "Responsible Communication" defence.'
+        else:
+            journalist = None
+
+        points = [sued, truth, absolute, qualified, comment, journalist]
+        points = [p for p in points if p]
+        summary = "So, to summarize: {}".format(Fulfill.join_list(points))
+        return summary
 
     def POST(self):
         raw_data = web.data()
@@ -50,13 +128,24 @@ class Fulfill:
 
         try:
             data = json.loads(raw_data)
-            params = Fulfill.extract_parameters(data)
-            def_response = Fulfill.extract_default_response(data)
-            response_text = "default: {0}, params: {1}".format(repr(def_response), repr(params))
-            response['displayText'] = response_text
-            response['speech'] = response_text
         except:
-            pass
+            data = {}
+        params = Fulfill.extract_parameters(data)
+        def_response = Fulfill.extract_default_response(data)
+
+        # parameters may include:
+        # sued
+        # truth, truth-evidence
+        # absolute, abspriv
+        # qualified
+        # comment
+        # journalist
+
+        summary = self.summarize(params)
+
+        response_text = "{0}. {1}".format(summary, repr(def_response))
+        response['displayText'] = response_text
+        response['speech'] = response_text
 
         self.dump_error(raw_data, response)
 
