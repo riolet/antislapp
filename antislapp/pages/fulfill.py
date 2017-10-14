@@ -21,10 +21,10 @@ class Fulfill:
             try:
                 pprint.pprint(json.loads(data), f)
             except:
-                print("(json decode failed)")
+                f.write("(json decode failed)\n")
                 pprint.pprint(data, f)
             f.write("\n==== response ====\n")
-            pprint.pprint(response)
+            pprint.pprint(response, f)
             f.write("\n==== end ====\n")
 
     @staticmethod
@@ -33,7 +33,7 @@ class Fulfill:
         for key in params:
             if params[key].lower() == 'false':
                 params[key] = False
-            if params[key].lower() == 'true':
+            elif params[key].lower() == 'true':
                 params[key] = True
         return params
 
@@ -142,8 +142,7 @@ class Fulfill:
         # journalist
 
         summary = self.summarize(params)
-
-        response_text = "{0}. {1}".format(summary, repr(def_response))
+        response_text = "{0}. {1}".format(summary, def_response)
         response['displayText'] = response_text
         response['speech'] = response_text
 
