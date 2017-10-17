@@ -45,6 +45,10 @@ class Fulfill:
     def extract_action(data):
         return data.get('result', {}).get('action', '')
 
+#    @staticmethod
+#    def extract_context(data):
+#        pass
+
     @staticmethod
     def join_list(items):
         l = len(items)
@@ -133,13 +137,6 @@ class Fulfill:
         params = Fulfill.extract_parameters(data)
         def_response = Fulfill.extract_default_response(data)
 
-        # parameters may include:
-        # sued
-        # truth, truth-evidence
-        # absolute, abspriv
-        # qualified
-        # comment
-        # journalist
 
         summary = self.summarize(params)
         response_text = "{0}. {1}".format(summary, def_response)
