@@ -36,13 +36,17 @@ urls = ("/fulfill", "pages.fulfill.Fulfill",
 app = web.application(urls, globals())
 render = web.template.render(os.path.join(BASE_FOLDER, 'templates'))
 web.config.session_parameters['cookie_path'] = "/"
+old_debug = web.config.debug
+web.config.debug = False  # to quiet stderr output
 db = web.database(dbn='sqlite', db=DB_PATH)
+web.config.debug = old_debug
+del old_debug
 for command in parse_sql_file(os.path.join(BASE_FOLDER, 'tables.sql'), {}):
     db.query(command)
 
 
 if web.config.get('_session') is None:
-    #session_store = web.session.DiskStore(os.path.join(BASE_FOLDER, 'sessions'))
+    # session_store = web.session.DiskStore(os.path.join(BASE_FOLDER, 'sessions'))
     session_store = web.session.DBStore(db, 'sessions')
     session = web.session.Session(app, session_store, initializer={'count': 0})
     web.config._session = session
