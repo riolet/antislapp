@@ -145,16 +145,28 @@ class Fulfill:
         response = {
             'speech': request['default'],
             'displayText': request['default'],
+            #'event': {"name":"<event_name>","data":{"<parameter_name>":"<parameter_value>"}},
+            #'data': _,
+            #'contextOut': [{"name":"weather", "lifespan":2, "parameters":{"city":"Rome"}}],
+            #'source': 'example.com',
         }
 
         if request['action'] == "is_sued":
-            defence.set_sued(request['params'].get('sued', False))
+            defence.set_sued(request['params']['sued'])
         elif request['action'] == 'get_accusations':
-            pass
+            defence.add_accusation(request['params']['reason'])
         elif request['action'] == 'done_accusations':
-            pass
+            # make a list of all accusations X defences, remove those checked, trigger the first unchecked.
+            response['event'] = {
+                "name":"report",
+                "data":{"extra":"details"}
+            }
         elif request['action'] == 'defence':
             pass
+        elif request['action'] == 'report':
+            report = defence.report()
+            response['speech'] = report
+            response['displayText'] = report
         else:
             pass
 
@@ -178,14 +190,16 @@ class Fulfill:
     def POST(self):
         inbound = web.data()
 
-        request = self.decode_inbound(inbound)
-        response = self.process_request(request)
-        outbound = self.prepare_response(response)
+        try:
+            request = self.decode_inbound(inbound)
+            response = self.process_request(request)
+        except Exception as e:
+            response = {
+                'speech': "error: {}".format(e),
+                'displayText': "error: {}".format(e)
+            }
 
-        # use action and params to determine current phase of conversation
-        # save relevant params.
-        # choose event to trigger (if needed)
-        # adjust output speech/displayText? (if needed?)
+        outbound = self.prepare_response(response)
 
         self.dump_error(inbound, outbound)
         web.header("Content-Type", "application/json")
