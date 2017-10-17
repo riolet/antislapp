@@ -37,14 +37,17 @@ class Defence:
             'cid': conversation_id
         }
         rows = self.db.select(Defence.TABLE, what='data', where='conversation_id=$cid', vars=qvars)
-        try:
-            row = rows.first()
-            self.data = cPickle.loads(str(row['data']))
-            now = int(time.time())
-            self.db.update(Defence.TABLE, where='conversation_id=$cid', vars=qvars, atime=now)
-        except:
-            traceback.print_exc()
+        row = rows.first()
+        if row is None:
             self.data = {}
+        else:
+            try:
+                self.data = cPickle.loads(str(row['data']))
+                now = int(time.time())
+                self.db.update(Defence.TABLE, where='conversation_id=$cid', vars=qvars, atime=now)
+            except:
+                traceback.print_exc()
+                self.data = {}
 
     def reset(self):
         self.data = {}
