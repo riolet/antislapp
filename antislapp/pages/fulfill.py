@@ -1,9 +1,10 @@
 import os
 import web
 import json
-import antislapp.index
 import pprint
 import traceback
+import antislapp.index
+from antislapp.models.defence import Defence
 
 
 class Fulfill:
@@ -44,6 +45,14 @@ class Fulfill:
     @staticmethod
     def extract_action(data):
         return data.get('result', {}).get('action', '')
+
+    @staticmethod
+    def load_defence(data):
+        cid = data.get('sessionId', None)
+        if cid is None:
+            raise ValueError
+        d = Defence(antislapp.index.db, cid)
+        return d
 
 #    @staticmethod
 #    def extract_context(data):
@@ -136,14 +145,13 @@ class Fulfill:
             data = {}
         params = Fulfill.extract_parameters(data)
         def_response = Fulfill.extract_default_response(data)
+        defence = Fulfill.load_defence(data)
 
-
-        summary = self.summarize(params)
-        response_text = "{0}. {1}".format(summary, def_response)
-        response['displayText'] = response_text
-        response['speech'] = response_text
+        # use action and params to determine current phase of conversation
+        # save relevant params.
+        # choose event to trigger (if needed)
+        # adjust output speech/displayText? (if needed?)
 
         self.dump_error(raw_data, response)
-
         web.header("Content-Type", "application/json")
         return json.dumps(response)
