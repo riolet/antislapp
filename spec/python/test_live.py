@@ -96,4 +96,5 @@ def test_done_accusations():
     response = requests.post(url, data=sample_data2)
     assert response.status_code == 200
     decoded = json.loads(response.content)
-    assert decoded == {}
+    assert decoded == {u'followupEvent': {u'data': {u'extra': u'details'}, u'name': u'trigger-report'},
+                       u'source': u'riobot'}

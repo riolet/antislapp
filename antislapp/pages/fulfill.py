@@ -13,19 +13,23 @@ class Fulfill:
     def __init__(self):
         pass
 
-    def dump_error(self, data, response):
+    def dump_error(self, inbound, outbound):
         with file(Fulfill.outfile, 'w') as f:
             f.write("\n==== error ====\n")
             er = traceback.format_exc()
             f.write(er)
-            f.write("\n==== data ====\n")
+            f.write("\n==== inbound ====\n")
             try:
-                pprint.pprint(json.loads(data), f)
+                pprint.pprint(json.loads(inbound), f)
             except:
                 f.write("(json decode failed)\n")
-                pprint.pprint(data, f)
-            f.write("\n==== response ====\n")
-            pprint.pprint(response, f)
+                pprint.pprint(inbound, f)
+            f.write("\n==== outbound ====\n")
+            try:
+                pprint.pprint(json.loads(outbound), f)
+            except:
+                f.write("(json decode failed)\n")
+                pprint.pprint(outbound, f)
             f.write("\n==== end ====\n")
 
     @staticmethod
@@ -143,8 +147,8 @@ class Fulfill:
         defence = Defence(request['db'], request['conversation_id'])
 
         response = {
-            #'speech': request['default'],
-            #'displayText': request['default'],
+            'speech': request['default'],
+            'displayText': request['default'],
             #'event': {"name":"<event_name>","data":{"<parameter_name>":"<parameter_value>"}},
             #'data': _,
             #'contextOut': [{"name":"weather", "lifespan":2, "parameters":{"city":"Rome"}}],
@@ -157,16 +161,12 @@ class Fulfill:
             defence.add_accusation(request['params']['reason'])
         elif request['action'] == 'done_accusations':
             # make a list of all accusations X defences, remove those checked, trigger the first unchecked.
-            # response['event'] = {
-            #     'name':"trigger-report",
-            #     'data':{"extra":"details"}
-            # }
-            response = {
-                'followupEvent': {
-                    'name':"trigger-report",
-                    'data':{"extra":"details"}
-                }
+            response['followupEvent'] = {
+                'name':"trigger-report",
+                'data':{"extra":"details"}
             }
+            del response['speech']  # required
+            del response['displayText']
         elif request['action'] == 'defence':
             pass
         elif request['action'] == 'report':
@@ -182,17 +182,7 @@ class Fulfill:
         return response
 
     def prepare_response(self, response):
-        #prepared = {
-        #    'speech': response['speech'],  # String. Response to the request.
-        #    'displayText': response['displayText'],  # String. Text displayed by client.
-        #    'data': response.get('data', ''),  # Object. this data is passed through DialogFlow and sent to the client.
-        #    'contextOut': response.get('contextOut', []),  # Array of context objects. Output context for the current intent.
-        #    # eg: [{"name":"weather", "lifespan":2, "parameters":{"city":"Rome"}}]
-        #    'source': response.get('source', 'riobot'),  # String. Data source (??)
-        #    'followupEvent': response.get('followupEvent', {})  # Object. Event name and optional parameters sent from the web service to Dialogflow.
-        #    # eg: {"name":"<event_name>","data":{"<parameter_name>":"<parameter_value>"}}
-        #}
-        prepared = response
+        prepared = json.dumps(response)
         return prepared
 
 
@@ -212,4 +202,4 @@ class Fulfill:
 
         self.dump_error(inbound, outbound)
         web.header("Content-Type", "application/json")
-        return json.dumps(response)
+        return outbound
