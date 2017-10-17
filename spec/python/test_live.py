@@ -52,11 +52,12 @@ def test_post():
     response = requests.post(url, data=sample_data)
     assert response.status_code == 200
     decoded = json.loads(response.content)
-    assert decoded.get("speech", '') == 'So, to summarize: you have been sued, your words were true but you have ' \
-                                        'no proof, you weren\'t in a position of absolute privilege, you weren\'t ' \
-                                        'in a position of qualified privilege, and you were expressing your opinion ' \
-                                        'on a matter of public interest. Great! I would advise the use ' \
-                                        'of "Fair Comment" as your defense.'
+    #assert decoded.get("speech", '') == 'So, to summarize: you have been sued, your words were true but you have ' \
+    #                                    'no proof, you weren\'t in a position of absolute privilege, you weren\'t ' \
+    #                                    'in a position of qualified privilege, and you were expressing your opinion ' \
+    #                                    'on a matter of public interest. Great! I would advise the use ' \
+    #                                    'of "Fair Comment" as your defense.'
+    assert decoded.get("speech", '') == 'Great! I would advise the use of "Fair Comment" as your defense.'
 
 data2 = {u'id': u'9e551068-97dd-4fca-b1aa-9ad4e2016dab',
  u'lang': u'en',
@@ -95,8 +96,4 @@ def test_done_accusations():
     response = requests.post(url, data=sample_data2)
     assert response.status_code == 200
     decoded = json.loads(response.content)
-    assert decoded.get("speech", '') == 'So, to summarize: you have been sued, your words were true but you have ' \
-                                        'no proof, you weren\'t in a position of absolute privilege, you weren\'t ' \
-                                        'in a position of qualified privilege, and you were expressing your opinion ' \
-                                        'on a matter of public interest. Great! I would advise the use ' \
-                                        'of "Fair Comment" as your defense.'
+    assert decoded == {}

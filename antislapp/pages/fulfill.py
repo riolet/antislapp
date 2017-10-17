@@ -143,12 +143,12 @@ class Fulfill:
         defence = Defence(request['db'], request['conversation_id'])
 
         response = {
-            'speech': request['default'],
-            'displayText': request['default'],
+            #'speech': request['default'],
+            #'displayText': request['default'],
             #'event': {"name":"<event_name>","data":{"<parameter_name>":"<parameter_value>"}},
             #'data': _,
             #'contextOut': [{"name":"weather", "lifespan":2, "parameters":{"city":"Rome"}}],
-            #'source': 'example.com',
+            'source': 'riobot',
         }
 
         if request['action'] == "is_sued":
@@ -182,16 +182,17 @@ class Fulfill:
         return response
 
     def prepare_response(self, response):
-        prepared = {
-            'speech': response['speech'],  # String. Response to the request.
-            'displayText': response['displayText'],  # String. Text displayed by client.
-            'data': response.get('data', ''),  # Object. this data is passed through DialogFlow and sent to the client.
-            'contextOut': response.get('contextOut', []),  # Array of context objects. Output context for the current intent.
-            # eg: [{"name":"weather", "lifespan":2, "parameters":{"city":"Rome"}}]
-            'source': response.get('source', 'riobot'),  # String. Data source (??)
-            'followupEvent': response.get('followupEvent', {})  # Object. Event name and optional parameters sent from the web service to Dialogflow.
-            # eg: {"name":"<event_name>","data":{"<parameter_name>":"<parameter_value>"}}
-        }
+        #prepared = {
+        #    'speech': response['speech'],  # String. Response to the request.
+        #    'displayText': response['displayText'],  # String. Text displayed by client.
+        #    'data': response.get('data', ''),  # Object. this data is passed through DialogFlow and sent to the client.
+        #    'contextOut': response.get('contextOut', []),  # Array of context objects. Output context for the current intent.
+        #    # eg: [{"name":"weather", "lifespan":2, "parameters":{"city":"Rome"}}]
+        #    'source': response.get('source', 'riobot'),  # String. Data source (??)
+        #    'followupEvent': response.get('followupEvent', {})  # Object. Event name and optional parameters sent from the web service to Dialogflow.
+        #    # eg: {"name":"<event_name>","data":{"<parameter_name>":"<parameter_value>"}}
+        #}
+        prepared = response
         return prepared
 
 
