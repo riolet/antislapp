@@ -158,8 +158,8 @@ class Fulfill:
         elif request['action'] == 'done_accusations':
             # make a list of all accusations X defences, remove those checked, trigger the first unchecked.
             response['event'] = {
-                "name":"report",
-                "data":{"extra":"details"}
+                'name':"trigger-report",
+                'data':{"extra":"details"}
             }
         elif request['action'] == 'defence':
             pass
@@ -167,6 +167,8 @@ class Fulfill:
             report = defence.report()
             response['speech'] = report
             response['displayText'] = report
+        elif request['action'] == 'clear_all':
+            defence.reset()
         else:
             pass
 
