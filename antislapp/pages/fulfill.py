@@ -157,9 +157,15 @@ class Fulfill:
             defence.add_accusation(request['params']['reason'])
         elif request['action'] == 'done_accusations':
             # make a list of all accusations X defences, remove those checked, trigger the first unchecked.
-            response['event'] = {
-                'name':"trigger-report",
-                'data':{"extra":"details"}
+            # response['event'] = {
+            #     'name':"trigger-report",
+            #     'data':{"extra":"details"}
+            # }
+            response = {
+                'followupEvent': {
+                    'name':"trigger-report",
+                    'data':{"extra":"details"}
+                }
             }
         elif request['action'] == 'defence':
             pass
@@ -183,7 +189,7 @@ class Fulfill:
             'contextOut': response.get('contextOut', []),  # Array of context objects. Output context for the current intent.
             # eg: [{"name":"weather", "lifespan":2, "parameters":{"city":"Rome"}}]
             'source': response.get('source', 'riobot'),  # String. Data source (??)
-            'followupEvent': response.get('event', {})  # Object. Event name and optional parameters sent from the web service to Dialogflow.
+            'followupEvent': response.get('followupEvent', {})  # Object. Event name and optional parameters sent from the web service to Dialogflow.
             # eg: {"name":"<event_name>","data":{"<parameter_name>":"<parameter_value>"}}
         }
         return prepared
