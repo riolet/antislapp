@@ -46,14 +46,6 @@ class Fulfill:
     def extract_action(data):
         return data.get('result', {}).get('action', '')
 
-    @staticmethod
-    def load_defence(data):
-        cid = data.get('sessionId', None)
-        if cid is None:
-            raise ValueError
-        d = Defence(antislapp.index.db, cid)
-        return d
-
 #    @staticmethod
 #    def extract_context(data):
 #        pass
@@ -126,32 +118,75 @@ class Fulfill:
         summary = "So, to summarize: {}".format(Fulfill.join_list(points))
         return summary
 
-    def POST(self):
-        raw_data = web.data()
-        response = {
-            'speech': 'Speech Response post',  # String. Response to the request.
-            'displayText': 'Display Text Response post',  # String. Text displayed by client.
-            'data': '',  # Object. this data is passed through DialogFlow and sent to the client.
-            'contextOut': [],  # Array of context objects. Output context for the current intent.
-            # eg: [{"name":"weather", "lifespan":2, "parameters":{"city":"Rome"}}]
-            'source': '',  # String. Data source (??)
-            'followupEvent': {}  # Object. Event name and optional parameters sent from the web service to Dialogflow.
-            # eg: {"name":"<event_name>","data":{"<parameter_name>":"<parameter_value>"}}
-        }
-
+    def decode_inbound(self, inbound):
         try:
-            data = json.loads(raw_data)
+            data = json.loads(inbound)
         except:
             data = {}
         params = Fulfill.extract_parameters(data)
         def_response = Fulfill.extract_default_response(data)
-        defence = Fulfill.load_defence(data)
+        action = Fulfill.extract_action(data)
+        cid = data.get('sessionId', None)
+        if cid is None:
+            raise ValueError
+
+        request = {
+            'db': antislapp.index.db,
+            'params': params,
+            'default': def_response,
+            'action': action,
+            'conversation_id': cid,
+        }
+        return request
+
+    def process_request(self, request):
+        defence = Defence(request['db'], request['conversation_id'])
+
+        response = {
+            'speech': request['default'],
+            'displayText': request['default'],
+        }
+
+        if request['action'] == "is_sued":
+            defence.set_sued(request['params'].get('sued', False))
+        elif request['action'] == 'get_accusations':
+            pass
+        elif request['action'] == 'done_accusations':
+            pass
+        elif request['action'] == 'defence':
+            pass
+        else:
+            pass
+
+        defence.save()
+        return response
+
+    def prepare_response(self, response):
+        prepared = {
+            'speech': response['speech'],  # String. Response to the request.
+            'displayText': response['displayText'],  # String. Text displayed by client.
+            'data': response.get('data', ''),  # Object. this data is passed through DialogFlow and sent to the client.
+            'contextOut': response.get('contextOut', []),  # Array of context objects. Output context for the current intent.
+            # eg: [{"name":"weather", "lifespan":2, "parameters":{"city":"Rome"}}]
+            'source': response.get('source', 'riobot'),  # String. Data source (??)
+            'followupEvent': response.get('event', {})  # Object. Event name and optional parameters sent from the web service to Dialogflow.
+            # eg: {"name":"<event_name>","data":{"<parameter_name>":"<parameter_value>"}}
+        }
+        return prepared
+
+
+    def POST(self):
+        inbound = web.data()
+
+        request = self.decode_inbound(inbound)
+        response = self.process_request(request)
+        outbound = self.prepare_response(response)
 
         # use action and params to determine current phase of conversation
         # save relevant params.
         # choose event to trigger (if needed)
         # adjust output speech/displayText? (if needed?)
 
-        self.dump_error(raw_data, response)
+        self.dump_error(inbound, outbound)
         web.header("Content-Type", "application/json")
         return json.dumps(response)
