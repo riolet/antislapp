@@ -25,6 +25,7 @@ import web
 
 class Defence:
     TABLE='conversations'
+    DEFENCES = ['Truth', 'Absolute Privilege', 'Qualified Privilege', 'Fair Comment', 'Responsible Communication']
 
     def __init__(self, db, conversation_id):
         """
@@ -72,19 +73,33 @@ class Defence:
     def get_accusations(self):
         return self.data.get('accusations', [])[:]
 
-    def add_defence(self, accusation_id, defence):
+    def add_defence(self, accusation_id, defence, reason):
         if 'defences' not in self.data:
             self.data['defences'] = {}
         defences = self.data['defences']
 
         if accusation_id not in defences:
-            defences[accusation_id] = []
+            defences[accusation_id] = {}
 
-        defences[accusation_id].append(defence)
+        defences[accusation_id][defence] = reason
 
     def get_defences(self):
         defences = self.data.get('defences', {})
         return defences.copy()
+
+    def determine_next_defence(self):
+        accusations = self.get_accusations()
+        defences = self.get_defences()
+        for i, acc in enumerate(accusations):
+            for d in Defence.DEFENCES:
+                if d not in defences.get(i, {}):
+                    result = {
+                        'acc_id': i,
+                        'acc': acc,
+                        'def': d
+                    }
+                    return result
+        return None
 
     def report(self):
         if self.data.get('sued') is None:
@@ -98,7 +113,8 @@ class Defence:
         accusations = self.data.get('accusations', [])
         defences = self.data.get('defences', {})
         for i, acc in enumerate(accusations):
-            joined_defences = ", ".join(defences.get(i, []))
+            ds = [k for k, v in defences.get(i, {}).iteritems() if v is not False]
+            joined_defences = ", ".join(ds)
             details.append("{}. {} ({})".format(i, acc, joined_defences or 'No plead'))
         summary = "You {sued}been sued. You are accused of (and plead): {details}".format(sued=sued, details=', '.join(details))
         return summary
