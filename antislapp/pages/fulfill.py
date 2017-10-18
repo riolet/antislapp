@@ -19,7 +19,7 @@ class Fulfill:
             'Responsible Communication': 'trigger-responsible'
         }
 
-    def dump_error(self, inbound, outbound):
+    def dump_error(self, inbound, request, outbound):
         with file(Fulfill.outfile, 'w') as f:
             f.write("\n==== error ====\n")
             er = traceback.format_exc()
@@ -30,6 +30,8 @@ class Fulfill:
             except:
                 f.write("(json decode failed)\n")
                 pprint.pprint(inbound, f)
+            f.write("\n==== translated ====\n")
+            pprint.pprint(request)
             f.write("\n==== outbound ====\n")
             try:
                 pprint.pprint(json.loads(outbound), f)
@@ -55,6 +57,16 @@ class Fulfill:
     @staticmethod
     def extract_action(data):
         return data.get('result', {}).get('action', '')
+
+    @staticmethod
+    def extract_contexts(data):
+        raw_contexts = data.get('result', {}).get('contexts', [])
+        contexts = {}
+        for ctx in raw_contexts:
+            contexts[ctx['name']] = ctx['parameters']
+            if 'lifespan' not in contexts[ctx['name']]:
+                contexts[ctx['name']]['lifespan'] = ctx['lifespan']
+        return contexts
 
     @staticmethod
     def join_list(items):
@@ -135,6 +147,7 @@ class Fulfill:
         cid = data.get('sessionId', None)
         if cid is None:
             raise ValueError
+        contexts = Fulfill.extract_contexts(data)
 
         request = {
             'db': antislapp.index.db,
@@ -142,6 +155,7 @@ class Fulfill:
             'default': def_response,
             'action': action,
             'conversation_id': cid,
+            'contexts': contexts
         }
         return request
 
@@ -154,6 +168,7 @@ class Fulfill:
             #'event': {"name":"<event_name>","data":{"<parameter_name>":"<parameter_value>"}},
             #'data': _,
             #'contextOut': [{"name":"weather", "lifespan":2, "parameters":{"city":"Rome"}}],
+            # context name must be lowercase
             'source': 'riobot',
         }
 
@@ -162,22 +177,44 @@ class Fulfill:
         elif request['action'] == 'get_accusations':
             defence.add_accusation(request['params']['reason'])
         elif request['action'] == 'done_accusations':
-            # make a list of all accusations X defences, remove those checked, trigger the first unchecked.
             next = defence.determine_next_defence()
-            # next has .acc_id, .acc, .def
-            response['contextOut'] = [{
-                'name': 'currentAcc',
-                'lifespan': 2,
-                'parameters': {'acc_id': next['acc_id'], 'acc': next['acc']}
-            }]
-            response['followupEvent'] = {
-                'name': self.defence_triggers[next['def']],
-                'data': {}
-            }
-            del response['speech']  # required
-            del response['displayText']
-        elif request['action'] == 'defence':
-            pass
+            # next has .acc_id, .acc, .def OR is None
+            if next is None:
+                response['followupEvent'] = {'name': 'trigger-report', 'data': {}}
+            else:
+                response['contextOut'] = [{
+                    'name': 'currentacc',
+                    'lifespan': 2,
+                    'parameters': next
+                }]
+                response['followupEvent'] = {
+                    'name': self.defence_triggers[next['def']],
+                    'data': {}
+                }
+            del response['speech']  # required to be absent
+            del response['displayText']  # required to be absent
+        elif request['action'] in ('check-truth', 'check-absolute', 'check-qualified', 'check-fair', 'check-responsible'):
+            # store the new defence data received.
+            # TODO: lots of assumptions here. How can we mitigate / strengthen?
+            update = request['contexts']['currentacc']
+            defence.add_defence(update['acc_id'], update['def'], request['params']['valid'])
+
+            next = defence.determine_next_defence()
+            # next has .acc_id, .acc, .def OR is None
+            if next is None:
+                response['followupEvent'] = {'name': 'trigger-report', 'data': {}}
+            else:
+                response['contextOut'] = [{
+                    'name': 'currentacc',
+                    'lifespan': 2,
+                    'parameters': next
+                }]
+                response['followupEvent'] = {
+                    'name': self.defence_triggers[next['def']],
+                    'data': {}
+                }
+            del response['speech']  # required to be absent
+            del response['displayText']  # required to be absent
         elif request['action'] == 'report':
             report = defence.report()
             response['speech'] = report
@@ -209,6 +246,6 @@ class Fulfill:
 
         outbound = self.prepare_response(response)
 
-        self.dump_error(inbound, outbound)
+        self.dump_error(inbound, request, outbound)
         web.header("Content-Type", "application/json")
         return outbound

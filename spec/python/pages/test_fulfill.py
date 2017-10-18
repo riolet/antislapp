@@ -158,6 +158,7 @@ def test_extract():
     assert ex(data3) == {u'date': u'2017-10-04', u'geo-city': u'Paris'}
     assert ex(data4) == {u'date': u'2017-10-05', u'date-period': u'', u'geo-city': u'Paris'}
 
+
 def test_def_response():
     ex = fulfill.Fulfill.extract_default_response
 
@@ -166,12 +167,14 @@ def test_def_response():
     assert ex(data3) == u"I don't know the weather for 2017-10-04 in Paris"
     assert ex(data4) == u''
 
+
 def test_extract_action():
     ex = fulfill.Fulfill.extract_action
     assert ex(data1) == u''
     assert ex(data2) == u'bogus'
     assert ex(data3) == u'checking'
     assert ex(data4) == u''
+
 
 def test_join_list():
     ex = fulfill.Fulfill.join_list
@@ -180,6 +183,32 @@ def test_join_list():
     assert ex(['a', 'b']) == 'a and b'
     assert ex(['a', 'b', 'c']) == 'a, b, and c'
     assert ex(['a', 'b', 'c', 'd']) == 'a, b, c, and d'
+
+
+def test_extract_contexts():
+    ex = fulfill.Fulfill.extract_contexts
+
+    assert ex(data1) == {}
+    assert ex(data2) == {}
+    assert ex(data3) == {
+        u'location': {
+            u'lifespan': 5,
+            u'date': u'2017-10-04',
+            u'date.original': u'today',
+            u'geo-city': u'Paris',
+            u'geo-city.original': u'paris'}
+    }
+    assert ex(data4) == {
+        u'location': {
+            u'lifespan': 5,
+            u'date': u'2017-10-05',
+            u'date-period': u'',
+            u'date-period.original': u'',
+            u'date.original': u'tomorrow',
+            u'geo-city': u'Paris',
+            u'geo-city.original': u''}
+    }
+
 
 def test_summarize():
     ex = fulfill.Fulfill.summarize
