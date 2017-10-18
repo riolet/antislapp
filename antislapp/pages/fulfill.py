@@ -11,7 +11,13 @@ class Fulfill:
     outfile = os.path.join(antislapp.index.BASE_FOLDER, 'sessions', 'test.txt')
 
     def __init__(self):
-        pass
+        self.defence_triggers = {
+            'Truth': 'trigger-truth',
+            'Absolute Privilege': 'trigger-absolute',
+            'Qualified Privilege': 'trigger-qualified',
+            'Fair Comment': 'trigger-fair',
+            'Responsible Communication': 'trigger-responsible'
+        }
 
     def dump_error(self, inbound, outbound):
         with file(Fulfill.outfile, 'w') as f:
@@ -49,10 +55,6 @@ class Fulfill:
     @staticmethod
     def extract_action(data):
         return data.get('result', {}).get('action', '')
-
-#    @staticmethod
-#    def extract_context(data):
-#        pass
 
     @staticmethod
     def join_list(items):
@@ -161,9 +163,16 @@ class Fulfill:
             defence.add_accusation(request['params']['reason'])
         elif request['action'] == 'done_accusations':
             # make a list of all accusations X defences, remove those checked, trigger the first unchecked.
+            next = defence.determine_next_defence()
+            # next has .acc_id, .acc, .def
+            response['contextOut'] = [{
+                'name': 'currentAcc',
+                'lifespan': 2,
+                'parameters': {'acc_id': next['acc_id'], 'acc': next['acc']}
+            }]
             response['followupEvent'] = {
-                'name':"trigger-report",
-                'data':{"extra":"details"}
+                'name': self.defence_triggers[next['def']],
+                'data': {}
             }
             del response['speech']  # required
             del response['displayText']
