@@ -87,6 +87,24 @@ class Defence:
         defences = self.data.get('defences', {})
         return defences.copy()
 
+    def get_undefended(self):
+        undefended = []
+        accusations = self.data.get('accusations', [])
+        defences = self.data.get('defences', {})
+        for i, acc in enumerate(accusations):
+            if not any(defences.get(i, {}).values()):
+                undefended.append(acc)
+        return undefended
+
+    def get_defended(self):
+        defended = []
+        accusations = self.data.get('accusations', [])
+        defences = self.data.get('defences', {})
+        for i, acc in enumerate(accusations):
+            if any(defences.get(i, {}).values()):
+                defended.append(acc)
+        return defended
+
     def determine_next_defence(self):
         accusations = self.get_accusations()
         defences = self.get_defences()

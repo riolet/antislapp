@@ -4,20 +4,14 @@ import json
 import pprint
 import traceback
 import antislapp.index
-from antislapp.models.defence import Defence
+from antislapp.models.controller import Controller
 
 
 class Fulfill:
     outfile = os.path.join(antislapp.index.BASE_FOLDER, 'sessions', 'test.txt')
 
     def __init__(self):
-        self.defence_triggers = {
-            'Truth': 'trigger-truth',
-            'Absolute Privilege': 'trigger-absolute',
-            'Qualified Privilege': 'trigger-qualified',
-            'Fair Comment': 'trigger-fair',
-            'Responsible Communication': 'trigger-responsible'
-        }
+        pass
 
     def dump_error(self, inbound, request, outbound):
         with file(Fulfill.outfile, 'w') as f:
@@ -68,74 +62,6 @@ class Fulfill:
                 contexts[ctx['name']]['lifespan'] = ctx['lifespan']
         return contexts
 
-    @staticmethod
-    def join_list(items):
-        l = len(items)
-        if l == 0:
-            joined = ''
-        elif l == 1:
-            joined = items[0]
-        elif l == 2:
-            joined = "{} and {}".format(*items)
-        else:
-            joined = "{}, and {}".format(", ".join(items[:-1]), items[-1])
-        return joined
-
-    @staticmethod
-    def summarize(params):
-        if params.get('sued', False):
-            sued = 'you have been sued'
-        else:
-            sued = "you have not been sued"
-
-        if params.get('truth', False):
-            if params.get('truth-evidence'):
-                truth = "your words were true and you have some proof"
-            else:
-                truth = "your words were true but you have no proof"
-        else:
-            truth = "your words were untrue"
-
-        if 'absolute' in params:
-            if params['absolute']:
-                if params.get('abspriv', False):
-                    absolute = 'you were in a position of absolute privilege'
-                else:
-                    absolute = 'you were in a position of privilege but repeated yourself after the privilege ended'
-            else:
-                absolute = "you weren't in a position of absolute privilege"
-        else:
-            absolute = None
-
-        if 'qualified' in params:
-            if params['qualified']:
-                qualified = 'you were in a position of qualified privilege'
-            else:
-                qualified = "you weren't in a position of qualified privilege"
-        else:
-            qualified = None
-
-        if 'comment' in params:
-            if params['comment']:
-                comment = 'you were expressing your opinion on a matter of public interest'
-            else:
-                comment = "it didn't qualify as fair comment"
-        else:
-            comment = None
-
-        if 'journalist' in params:
-            if params['journalist']:
-                journalist = 'you were commenting on an urgent matter of public interest'
-            else:
-                journalist = 'you didn\'t qualify for "Responsible Communication" defence.'
-        else:
-            journalist = None
-
-        points = [sued, truth, absolute, qualified, comment, journalist]
-        points = [p for p in points if p]
-        summary = "So, to summarize: {}".format(Fulfill.join_list(points))
-        return summary
-
     def decode_inbound(self, inbound):
         try:
             data = json.loads(inbound)
@@ -160,77 +86,31 @@ class Fulfill:
         return request
 
     def process_request(self, request):
-        defence = Defence(request['db'], request['conversation_id'])
-
-        response = {
-            'speech': request['default'],
-            'displayText': request['default'],
-            #'event': {"name":"<event_name>","data":{"<parameter_name>":"<parameter_value>"}},
-            #'data': _,
-            #'contextOut': [{"name":"weather", "lifespan":2, "parameters":{"city":"Rome"}}],
-            # context name must be lowercase
-            'source': 'riobot',
-        }
+        # defence = Defence(request['db'], request['conversation_id'])
+        controller = Controller(request['conversation_id'], request['default'])
 
         if request['action'] == "is_sued":
-            defence.set_sued(request['params']['sued'])
+            controller.set_sued(request['params']['sued'])
         elif request['action'] == 'get_accusations':
-            defence.add_accusation(request['params']['reason'])
+            controller.add_accusation(request['params']['reason'])
         elif request['action'] == 'done_accusations':
-            next = defence.determine_next_defence()
-            # next has .acc_id, .acc, .def OR is None
-            if next is None:
-                response['followupEvent'] = {'name': 'trigger-report', 'data': {}}
-            else:
-                response['contextOut'] = [{
-                    'name': 'currentacc',
-                    'lifespan': 2,
-                    'parameters': next
-                }]
-                response['followupEvent'] = {
-                    'name': self.defence_triggers[next['def']],
-                    'data': {}
-                }
-            del response['speech']  # required to be absent
-            del response['displayText']  # required to be absent
+            controller.done_accusations()
         elif request['action'] in ('check-truth', 'check-absolute', 'check-qualified', 'check-fair', 'check-responsible'):
-            # store the new defence data received.
-            # TODO: lots of assumptions here. How can we mitigate / strengthen?
-            update = request['contexts']['currentacc']
-            defence.add_defence(update['acc_id'], update['def'], request['params']['valid'])
-
-            next = defence.determine_next_defence()
-            # next has .acc_id, .acc, .def OR is None
-            if next is None:
-                response['followupEvent'] = {'name': 'trigger-report', 'data': {}}
-            else:
-                response['contextOut'] = [{
-                    'name': 'currentacc',
-                    'lifespan': 2,
-                    'parameters': next
-                }]
-                response['followupEvent'] = {
-                    'name': self.defence_triggers[next['def']],
-                    'data': {}
-                }
-            del response['speech']  # required to be absent
-            del response['displayText']  # required to be absent
+            controller.defence_check(request['contexts']['currentacc'], request['params'])
         elif request['action'] == 'report':
-            report = defence.report()
-            response['speech'] = report
-            response['displayText'] = report
+            controller.report()
         elif request['action'] == 'clear_all':
-            defence.reset()
+            controller.reset()
         else:
             pass
 
-        defence.save()
+        controller.save()
+        response = controller.get_response()
         return response
 
     def prepare_response(self, response):
         prepared = json.dumps(response)
         return prepared
-
 
     def POST(self):
         inbound = web.data()

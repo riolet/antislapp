@@ -105,7 +105,7 @@ class Form18A:
         ]
         return '\n'.join(lines)
 
-    def prepare(self):
+    def write(self):
         head = self.build_head()
         body = self.build_body()
         tail = self.build_tail()
@@ -118,9 +118,14 @@ class Form18A:
             os.mkdir(os.path.dirname(self.path))
         self.writer.write()
 
+    def get_link(self):
+        path = self.path
+        i = path.find("/static")
+        return path[i:]
+
 def test():
     r1 = Form18A('session1')
-    r1.prepare()
+    r1.write()
 
     r2 = Form18A('session2')
     r2.set_defendant("Mr. Def")
@@ -129,4 +134,4 @@ def test():
     r2.set_denials(['1', '2', '6', '9'])
     r2.set_unanswered(['3', '8'])
     r2.set_evidence(['evidence article A', 'evidence article B', 'evidence article C'])
-    r2.prepare()
+    r2.write()
