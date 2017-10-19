@@ -78,7 +78,10 @@ class Controller:
         defences = self.defence.get_defences()
         for i, acc in enumerate(accusations):
             ds = [k for k, v in defences.get(i, {}).iteritems() if v is not False]
-            p = 'The defendant denies "{}" with a defence of {}'.format(acc, ds)
+            if len(ds) > 1:
+                p = 'The defendant denies "{}" with a defence of {}'.format(acc, self.join_list(ds))
+            else:
+                p = 'The defendant denies "{}" with a defence of {}'.format(acc, ds[0])
             evidence.append(p)
         form.set_evidence(evidence)
         form.write()
