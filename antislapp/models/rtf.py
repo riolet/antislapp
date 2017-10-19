@@ -77,7 +77,7 @@ class RTF:
 
 
 def test():
-    r = RTF('/var/tmp/hooligan.rtf')
+    r = RTF('/var/tmp/test.rtf')
     r.append("Line 1 is normal")
     r.append(r.bold("Line 2 is bold"))
     r.append(r.italic("Line 3 is italic"))

@@ -109,3 +109,6 @@ sessions/
 
 # don't include plugins by default
 plugins_omit/
+
+# prepared forms
+/antislapp/static/forms/
