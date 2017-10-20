@@ -57,7 +57,7 @@ class Controller:
                 'parameters': next
             }]
             self.response['followupEvent'] = {
-                'name': self.defence_triggers[next['def']],
+                'name': self.defence_triggers[next['qst']],
                 'data': {}
             }
         del self.response['speech']  # required to be absent
