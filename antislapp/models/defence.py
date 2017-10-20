@@ -158,14 +158,14 @@ class Defence:
         else:
             sued = "have not "
 
-        agrees = ", ".join(claim['accusation'] for claim in self.get_agreed())
-        withholds = ", ".join(claim['accusation'] for claim in self.get_withheld())
-        denies = ", ".join(claim['accusation'] for claim in self.get_denied())
-        p_agree = "You agree with the claims of {}. ".format(agrees)
-        p_withhold = "You cannot respond to claims of {}. ".format(withholds)
-        p_deny = "You deny the allegations of {}. ".format(denies)
+        agrees = "\", \"".join(claim['accusation'] for claim in self.get_agreed())
+        withholds = "\", \"".join(claim['accusation'] for claim in self.get_withheld())
+        denies = "\", \"".join(claim['accusation'] for claim in self.get_denied())
+        p_agree = "You agree with the claims of \"{}\". ".format(agrees)
+        p_withhold = "You cannot respond to claims of \"{}\". ".format(withholds)
+        p_deny = "You deny the allegations of \"{}\". ".format(denies)
 
-        summary = "You {sued}been sued. ".format(sued=sued)
+        summary = "In summary, you {sued}been sued. ".format(sued=sued)
         if agrees:
             summary += p_agree
         if withholds:

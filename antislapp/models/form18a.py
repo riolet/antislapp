@@ -95,12 +95,9 @@ class Form18A:
             p_withheld = 'There are no paragraphs in the statement of claim that the defendant cannot answer.'
 
         lines = [
-            self.numbered_paragraph(1, "The defendant admits the allegations contained in paragraphs {} "
-                                       "of the statement of claim.".format(", ".join(self.admissions))),
-            self.numbered_paragraph(2, "The defendant denies the allegations contained in paragraphs {} "
-                                       "of the statement of claim.".format(", ".join(self.denials))),
-            self.numbered_paragraph(3, 'The defendant has no knowledge in respect of the allegations contained in '
-                                       'paragraphs {} of the statement of claim.'.format(', '.join(self.unanswered))),
+            self.numbered_paragraph(1, p_agree),
+            self.numbered_paragraph(2, p_deny),
+            self.numbered_paragraph(3, p_withheld),
         ]
         for i, evidence in enumerate(self.evidence):
             p = self.numbered_paragraph(i+4, evidence)
