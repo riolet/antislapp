@@ -93,6 +93,8 @@ class Fulfill:
             controller.set_sued(request['params']['sued'])
         elif request['action'] == 'get_accusations':
             controller.add_accusation(request['params']['reason'])
+        elif request['action'] == 'plead':
+            controller.make_plea(request['contexts']['currentacc'], request['params'])
         elif request['action'] == 'done_accusations':
             controller.done_accusations()
         elif request['action'] in ('check-truth', 'check-absolute', 'check-qualified', 'check-fair', 'check-responsible'):

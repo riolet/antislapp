@@ -63,11 +63,12 @@ class Controller:
         del self.response['speech']  # required to be absent
         del self.response['displayText']  # required to be absent
 
+    def make_plea(self, context, params):
+        self.defence.plead(context['acc_id'], params['plead'])
+        self.done_accusations()
+
     def defence_check(self, context, params):
-        if context['qst'] == 'plead':
-            self.defence.plead(context['acc_id'], params['plead'])
-        else:
-            self.defence.add_defence(context['acc_id'], context['qst'], params['valid'])
+        self.defence.add_defence(context['acc_id'], context['qst'], params['valid'])
         self.done_accusations()
 
     def report(self):
