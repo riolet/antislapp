@@ -89,7 +89,7 @@ class Controller:
 
             for d in Defence.DEFENCES:
                 if d in claim and claim[d]['valid']:
-                    e = claim[d]['evidence']
+                    e = claim[d].get('evidence', [])
                     if len(e) > 1:
                         p = 'The defendant denies "{}" with a defence of {}'.format(claim['accusation'],
                                                                                     self.join_list(e))
