@@ -10,12 +10,12 @@ class Form18A:
     def __init__(self, session_id):
         self.path = os.path.join(Form18A.OUTPATH, '{}.rtf'.format(session_id))
         self.writer = rtf.RTF(self.path)
-        self.plaintiff = "Plaintiff"
-        self.defendant = "Defendant"
+        self.plaintiff = "Their Name Here"
+        self.defendant = "Your Name Here"
         self.date = date.fromtimestamp(time.time()).strftime("%B %d, %Y")  # "September 07, 1998"
-        self.admissions = ['none']
-        self.unanswered = ['none']
-        self.denials = ['none']
+        self.admissions = []
+        self.unanswered = []
+        self.denials = []
         self.evidence = []
 
     def set_plaintiff(self, title):
@@ -76,6 +76,24 @@ class Form18A:
         # 3. accusations unanswered.
         # 4+. consecutive numbered paragraphs detailing the relevant facts to be used.
         #
+        if self.admissions:
+            p_agree = "The defendant admits the allegations of \"{}\" contained in "\
+                      "the statement of claim.".format('", "'.join(self.admissions))
+        else:
+            p_agree = "The defendant admits none of the allegations in the statement of claim."
+
+        if self.denials:
+            p_deny = "The defendant denies the allegations of \"{}\" contained in "\
+                     "the statement of claim.".format('", "'.join(self.denials))
+        else:
+            p_deny = "The defendant denies none of the allegations in the statement of claim."
+
+        if self.unanswered:
+            p_withheld = 'The defendant has no knowledge in respect of the allegations of \"{}\" contained '\
+                         'in the statement of claim.'.format(', '.join(self.unanswered))
+        else:
+            p_withheld = 'There are no paragraphs in the statement of claim that the defendant cannot answer.'
+
         lines = [
             self.numbered_paragraph(1, "The defendant admits the allegations contained in paragraphs {} "
                                        "of the statement of claim.".format(", ".join(self.admissions))),
