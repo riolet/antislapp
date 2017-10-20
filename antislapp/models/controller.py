@@ -18,6 +18,7 @@ class Controller:
             'source': 'riobot',
         }
         self.defence_triggers = {
+            'plead': 'trigger-plead',
             'Truth': 'trigger-truth',
             'Absolute Privilege': 'trigger-absolute',
             'Qualified Privilege': 'trigger-qualified',
@@ -45,10 +46,10 @@ class Controller:
         self.defence.add_accusation(accusation)
 
     def done_accusations(self):
-        next = self.defence.determine_next_defence()
+        next = self.defence.determine_next_question()
         # next has .acc_id, .acc, .def OR is None
         if next is None:
-            self.response['followupEvent'] = {'name': 'trigger-report', 'data': {}}
+            self.response['followupEvent'] = {'name': 'trigger-summary', 'data': {}}
         else:
             self.response['contextOut'] = [{
                 'name': 'currentacc',
@@ -63,7 +64,10 @@ class Controller:
         del self.response['displayText']  # required to be absent
 
     def defence_check(self, context, params):
-        self.defence.add_defence(context['acc_id'], context['def'], params['valid'])
+        if context['qst'] == 'plead':
+            self.defence.plead(context['acc_id'], params['plead'])
+        else:
+            self.defence.add_defence(context['acc_id'], context['qst'], params['valid'])
         self.done_accusations()
 
     def report(self):
