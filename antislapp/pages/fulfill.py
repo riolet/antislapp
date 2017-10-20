@@ -121,6 +121,7 @@ class Fulfill:
             request = self.decode_inbound(inbound)
             response = self.process_request(request)
         except Exception as e:
+            traceback.print_exc()
             response = {
                 'speech': "error: {}".format(e),
                 'displayText': "error: {}".format(e)

@@ -64,36 +64,44 @@ class Controller:
         del self.response['displayText']  # required to be absent
 
     def make_plea(self, context, params):
-        self.defence.plead(context['acc_id'], params['plead'])
+        cid = int(float(context['acc_id']))
+        self.defence.plead(cid, params['plead'])
         self.done_accusations()
 
     def defence_check(self, context, params):
-        self.defence.add_defence(context['acc_id'], context['qst'], params['valid'])
+        cid = int(float(context['acc_id']))
+        self.defence.add_defence(cid, context['qst'], params['valid'])
         self.done_accusations()
 
     def report(self):
         report = self.defence.report()
         form = Form18A(self.cid)
 
-        form.set_unanswered(self.defence.get_undefended())
-        form.set_denials(self.defence.get_defended())
+        form.set_unanswered([claim['accusation'] for claim in self.defence.get_withheld()])
+        form.set_denials([claim['accusation'] for claim in self.defence.get_denied()])
+        form.set_admissions([claim['accusation'] for claim in self.defence.get_agreed()])
 
         evidence = []
-        accusations = self.defence.get_accusations()
-        defences = self.defence.get_defences()
-        for i, acc in enumerate(accusations):
-            ds = [k for k, v in defences.get(i, {}).iteritems() if v is not False]
-            if len(ds) > 1:
-                p = 'The defendant denies "{}" with a defence of {}'.format(acc, self.join_list(ds))
-            else:
-                p = 'The defendant denies "{}" with a defence of {}'.format(acc, ds[0])
-            evidence.append(p)
+        claims = self.defence.get_claims()
+        for i, claim in enumerate(claims):
+            if claim['plead'] != 'deny':
+                continue
+
+            for d in Defence.DEFENCES:
+                if d in claim and claim[d]['valid']:
+                    e = claim[d]['evidence']
+                    if len(e) > 1:
+                        p = 'The defendant denies "{}" with a defence of {}'.format(claim['accusation'],
+                                                                                    self.join_list(e))
+                        evidence.append(p)
+                    elif len(e) == 1:
+                        p = 'The defendant denies "{}" with a defence of {}'.format(claim['accusation'], e[0])
+                        evidence.append(p)
         form.set_evidence(evidence)
         form.write()
 
         report = report + " Download statement of defence here: http://riobot.centralus.cloudapp.azure.com{}".format(form.get_link())
 
-        self.defence.get_accusations()
         self.response['speech'] = report
         self.response['displayText'] = report
 

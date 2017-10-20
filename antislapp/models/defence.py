@@ -75,7 +75,7 @@ class Defence:
 
         return len(self.data['claims']) - 1
 
-    def get_accusations(self):
+    def get_claims(self):
         return self.data.get('claims', [])
 
     def plead(self, accusation_id, plead):
