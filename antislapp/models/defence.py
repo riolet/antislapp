@@ -6,26 +6,28 @@ import web
 # data looks like:
 # data:
 #   sued = True/False
-#   accusations:
-#     - blah blah X
-#     - blah blah Y
-#     - blah blah Z
-#   defences:
-#     0:  # (X)
-#       - Truth
-#       - Absolute Privilege
-#     1:  # (Y)
-#       - Fair Comment
-#       - Responsible Communication
-#     2:  # (Z)
-#       - Truth
-#       - Absolute Privilege
-#
+#   claims = [
+#       {accusation: blah blah X
+#       plead: agree/deny/withhold
+#       Truth:
+#           valid: true/false
+#           evidence: ['evidence1', 'evidence2']
+#       Absolute Privilege:
+#           valid: ...
+#           evidence: [...]
+#       ...
+#       },
+#       {accusation: blah blah Y
+#        ...
+#       },
+#       {accusation: blah blah Z
+#       ...}
 
 
 class Defence:
-    TABLE='conversations'
+    TABLE = 'conversations'
     DEFENCES = ['Truth', 'Absolute Privilege', 'Qualified Privilege', 'Fair Comment', 'Responsible Communication']
+    PLEADS = ['agree', 'deny', 'withhold']
 
     def __init__(self, db, conversation_id):
         """
@@ -40,7 +42,7 @@ class Defence:
         rows = self.db.select(Defence.TABLE, what='data', where='conversation_id=$cid', vars=qvars)
         row = rows.first()
         if row is None:
-            self.data = {}
+            self.reset()
         else:
             try:
                 self.data = cPickle.loads(str(row['data']))
@@ -48,10 +50,13 @@ class Defence:
                 self.db.update(Defence.TABLE, where='conversation_id=$cid', vars=qvars, atime=now)
             except:
                 traceback.print_exc()
-                self.data = {}
+                self.reset()
 
     def reset(self):
-        self.data = {}
+        self.data = {
+            'sued': None,
+            'claims': []
+        }
 
     def save(self):
         pickled_data = cPickle.dumps(self.data)
@@ -64,59 +69,85 @@ class Defence:
         self.data['sued'] = bool(sued)
 
     def add_accusation(self, accusation):
-        if 'accusations' not in self.data:
-            self.data['accusations'] = []
+        self.data['claims'].append({
+            'accusation': accusation
+        })
 
-        self.data['accusations'].append(accusation)
-        return len(self.data['accusations']) - 1
+        return len(self.data['claims']) - 1
 
     def get_accusations(self):
-        return self.data.get('accusations', [])[:]
+        return self.data.get('claims', [])
 
-    def add_defence(self, accusation_id, defence, reason):
-        if 'defences' not in self.data:
-            self.data['defences'] = {}
-        defences = self.data['defences']
+    def plead(self, accusation_id, plead):
+        # Raises IndexError if accusation_id is missing.
+        # Raises ValueError if plead isn't one of Defence.PLEADS.
+        context = self.data['claims'][accusation_id]
+        if plead not in Defence.PLEADS:
+            raise ValueError("Plead must be one of {}".format(Defence.PLEADS))
+        context['plead'] = plead
 
-        if accusation_id not in defences:
-            defences[accusation_id] = {}
+    def add_defence(self, accusation_id, defence, valid):
+        # Raises IndexError if accusation_id is missing.
+        # Raises ValueError if defence isn't one of Defence.DEFENCES
+        # Casts valid to bool.
+        context = self.data['claims'][accusation_id]
+        if defence not in Defence.DEFENCES:
+            raise ValueError("Defence must be one of {}".format(Defence.DEFENCES))
+        context[defence] = {}
+        context[defence]['valid'] = bool(valid)
 
-        defences[accusation_id][defence] = reason
+    def add_evidence(self, accusation_id, defence, evidence):
+        # Raises IndexError on missing accusation_id
+        # Raises ValueError if defence has not been pleaded.
+        context = self.data['claims'][accusation_id]
+        if defence not in context:
+            raise ValueError
+        if 'evidence' in context[defence]:
+            context[defence]['evidence'].append(evidence)
+        else:
+            context[defence]['evidence'] = [evidence]
 
-    def get_defences(self):
-        defences = self.data.get('defences', {})
-        return defences.copy()
+    def get_agreed(self):
+        agreed = []
+        for claim in self.data['claims']:
+            if claim.get('plead', 'withhold') == 'agree':
+                agreed.append(claim)
+        return agreed
 
-    def get_undefended(self):
-        undefended = []
-        accusations = self.data.get('accusations', [])
-        defences = self.data.get('defences', {})
-        for i, acc in enumerate(accusations):
-            if not any(defences.get(i, {}).values()):
-                undefended.append(acc)
-        return undefended
+    def get_withheld(self):
+        withheld = []
+        for claim in self.data['claims']:
+            if claim.get('plead', 'withhold') == 'withhold':
+                withheld.append(claim)
+        return withheld
 
-    def get_defended(self):
-        defended = []
-        accusations = self.data.get('accusations', [])
-        defences = self.data.get('defences', {})
-        for i, acc in enumerate(accusations):
-            if any(defences.get(i, {}).values()):
-                defended.append(acc)
-        return defended
+    def get_denied(self):
+        denied = []
+        for claim in self.data['claims']:
+            if claim.get('plead', 'withhold') == 'deny':
+                denied.append(claim)
+        return denied
 
-    def determine_next_defence(self):
-        accusations = self.get_accusations()
-        defences = self.get_defences()
-        for i, acc in enumerate(accusations):
-            for d in Defence.DEFENCES:
-                if d not in defences.get(i, {}):
-                    result = {
-                        'acc_id': i,
-                        'acc': acc,
-                        'def': d
-                    }
-                    return result
+    def determine_next_question(self):
+        for i, claim in enumerate(self.data['claims']):
+            if 'plead' not in claim:
+                question = {
+                    'acc_id': i,
+                    'acc': claim['accusation'],
+                    'qst': 'plead'
+                }
+                return question
+            elif claim['plead'] in ['withhold', 'agree']:
+                continue
+            else:
+                for d in Defence.DEFENCES:
+                    if d not in claim:
+                        question = {
+                            'acc_id': i,
+                            'acc': claim['accusation'],
+                            'qst': d
+                        }
+                        return question
         return None
 
     def report(self):
@@ -127,13 +158,19 @@ class Defence:
         else:
             sued = "have not "
 
-        details = []
-        accusations = self.data.get('accusations', [])
-        defences = self.data.get('defences', {})
-        for i, acc in enumerate(accusations):
-            ds = [k for k, v in defences.get(i, {}).iteritems() if v is not False]
-            joined_defences = ", ".join(ds)
-            details.append("{}. {} ({})".format(i, acc, joined_defences or 'No plead'))
-        summary = "You {sued}been sued. You are accused of (and plead): {details}".format(sued=sued, details=', '.join(details))
-        return summary
+        agrees = ", ".join(claim['accusation'] for claim in self.get_agreed())
+        withholds = ", ".join(claim['accusation'] for claim in self.get_withheld())
+        denies = ", ".join(claim['accusation'] for claim in self.get_denied())
+        p_agree = "You agree with the claims of {}. ".format(agrees)
+        p_withhold = "You cannot respond to claims of {}. ".format(withholds)
+        p_deny = "You deny the allegations of {}. ".format(denies)
+
+        summary = "You {sued}been sued. ".format(sued=sued)
+        if agrees:
+            summary += p_agree
+        if withholds:
+            summary += p_withhold
+        if denies:
+            summary += p_deny
+        return summary.strip()
 

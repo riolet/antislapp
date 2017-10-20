@@ -1,3 +1,4 @@
+import pytest
 from antislapp.models.defence import Defence
 from antislapp import index
 
@@ -15,8 +16,10 @@ def test_get_save():
     d1.add_accusation('libel')
     d2.add_accusation('slander')
 
-    assert d1.get_accusations() == ['libel']
-    assert d2.get_accusations() == ['slander']
+    d1acc = [acc['accusation'] for acc in d1.get_accusations()]
+    d2acc = [acc['accusation'] for acc in d2.get_accusations()]
+    assert d1acc == ['libel']
+    assert d2acc == ['slander']
 
     d1b = Defence(db, 'convo1')
     d2b = Defence(db, 'convo2')
@@ -28,112 +31,233 @@ def test_get_save():
 
     d1c = Defence(db, 'convo1')
     d2c = Defence(db, 'convo2')
-    assert d1c.get_accusations() == ['libel']
-    assert d2c.get_accusations() == ['slander']
+    d1cacc = [acc['accusation'] for acc in d1c.get_accusations()]
+    d2cacc = [acc['accusation'] for acc in d2c.get_accusations()]
+    assert d1cacc == ['libel']
+    assert d2cacc == ['slander']
 
 
 def test_accusations():
     d1 = Defence(db, 'convo1')
     d1.reset()
     d1.save()
-    assert d1.get_accusations() == []
+    d1acc = [acc['accusation'] for acc in d1.get_accusations()]
+    assert d1acc == []
 
     d1.add_accusation('acc1')
-    assert d1.get_accusations() == ['acc1']
+    d1acc = [acc['accusation'] for acc in d1.get_accusations()]
+    assert d1acc == ['acc1']
 
     d1.add_accusation('acc2')
-    assert d1.get_accusations() == ['acc1', 'acc2']
+    d1acc = [acc['accusation'] for acc in d1.get_accusations()]
+    assert d1acc == ['acc1', 'acc2']
 
     d1.add_accusation('acc3')
-    assert d1.get_accusations() == ['acc1', 'acc2', 'acc3']
+    d1acc = [acc['accusation'] for acc in d1.get_accusations()]
+    assert d1acc == ['acc1', 'acc2', 'acc3']
 
     d1b = Defence(db, 'convo1')
     assert d1b.get_accusations() == []
 
     d1.save()
     d1c = Defence(db, 'convo1')
-    assert d1c.get_accusations() == ['acc1', 'acc2', 'acc3']
+    d1cacc = [acc['accusation'] for acc in d1c.get_accusations()]
+    assert d1cacc == ['acc1', 'acc2', 'acc3']
 
 
-def test_defences():
+def test_plead():
     d1 = Defence(db, 'convo1')
     d1.reset()
     d1.save()
-    assert d1.get_defences() == {}
+    with pytest.raises(IndexError):
+        d1.plead(0, "agree")
 
-    d1.add_defence(0, 'Truth', True)
-    assert d1.get_defences() == {0: {'Truth': True}}
+    acc1 = d1.add_accusation("acc1")
+    with pytest.raises(ValueError):
+        d1.plead(acc1, "dook")
 
-    d1.add_defence(0, 'Absolute Privilege', True)
-    assert d1.get_defences() == {0: {'Truth': True, 'Absolute Privilege': True}}
+    acc2 = d1.add_accusation('acc2')
+    acc3 = d1.add_accusation('acc3')
+    d1.plead(acc1, "agree")
+    d1.plead(acc2, "deny")
+    d1.plead(acc3, "withhold")
+    accs = d1.get_accusations()
+    assert accs == [
+        {'accusation': 'acc1',
+         'plead': 'agree'},
+        {'accusation': 'acc2',
+         'plead': 'deny'},
+        {'accusation': 'acc3',
+         'plead': 'withhold'},
+    ]
 
-    d1.add_defence(1, 'Fair Comment', True)
-    assert d1.get_defences() == {0: {'Truth': True, 'Absolute Privilege': True}, 1: {'Fair Comment': True}}
 
-    d1b = Defence(db, 'convo1')
-    assert d1b.get_defences() == {}
-
-    d1.save()
-    d1c = Defence(db, 'convo1')
-    assert d1c.get_defences() == {0: {'Truth': True, 'Absolute Privilege': True}, 1: {'Fair Comment': True}}
-
-
-def test_report():
+def test_defence():
     d1 = Defence(db, 'convo1')
     d1.reset()
     d1.save()
-    d1.add_accusation('acc1')
-    d1.add_accusation('acc2')
-    d1.add_accusation('acc3')
-    d1.add_defence(0, 'Truth', True)
-    d1.add_defence(0, 'Absolute Privilege', False)
-    d1.add_defence(0, 'Qualified Privilege', True)
-    d1.add_defence(1, 'Fair Comment', True)
+    acc1 = d1.add_accusation("acc1")
+    with pytest.raises(IndexError):
+        d1.add_defence(1000, 'Truth', True)
 
-    report = d1.report()
-    assert report == "You may have been sued. You are accused of (and plead): 0. acc1 (Truth, Qualified Privilege), 1. acc2 (Fair Comment), 2. acc3 (No plead)" \
-        or report == "You may have been sued. You are accused of (and plead): 0. acc1 (Qualified Privilege, Truth), 1. acc2 (Fair Comment), 2. acc3 (No plead)"
+    with pytest.raises(ValueError):
+        d1.add_defence(acc1, 'AboveTheLaw', True)
 
-    d2 = Defence(db, 'convo2')
-    d2.reset()
-    d2.save()
-    d2.set_sued(True)
-    report = d2.report()
-    assert report == "You have been sued. You are accused of (and plead): "
+    d1.add_defence(acc1, 'Truth', 'true')
+    a = d1.get_accusations()
+    assert 'Truth' in a[0]
+    assert a[0]['Truth']['valid'] == True
 
-    d2.set_sued(False)
-    report = d2.report()
-    assert report == "You have not been sued. You are accused of (and plead): "
+    d1.add_defence(acc1, 'Truth', 'false')
+    a = d1.get_accusations()
+    assert 'Truth' in a[0]
+    assert a[0]['Truth']['valid'] == True
+
+    d1.add_defence(acc1, 'Truth', False)
+    a = d1.get_accusations()
+    assert 'Truth' in a[0]
+    assert a[0]['Truth']['valid'] == False
+
+    d1.add_defence(acc1, 'Absolute Privilege', False)
+    d1.add_defence(acc1, 'Qualified Privilege', False)
+    d1.add_defence(acc1, 'Fair Comment', False)
+    d1.add_defence(acc1, 'Responsible Communication', False)
+    a = d1.get_accusations()
+    assert 'Truth' in a[0]
+    assert 'Absolute Privilege' in a[0]
+    assert 'Qualified Privilege' in a[0]
+    assert 'Fair Comment' in a[0]
+    assert 'Responsible Communication' in a[0]
+
+
+def test_evidence():
+    d1 = Defence(db, 'convo1')
+    d1.reset()
+    d1.save()
+    acc1 = d1.add_accusation("acc1")
+    d1.add_defence(acc1, 'Truth', True)
+    d1.add_defence(acc1, 'Fair Comment', True)
+    with pytest.raises(IndexError):
+        d1.add_evidence(1000, 'Truth', 'he said she said')
+
+    with pytest.raises(ValueError):
+        d1.add_evidence(acc1, 'AboveTheLaw', 'she said he said')
+
+    d1.add_evidence(acc1, 'Truth', 'exhibit A')
+    d1.add_evidence(acc1, 'Truth', 'exhibit B')
+    d1.add_evidence(acc1, 'Truth', 'exhibit C')
+    a = d1.get_accusations()
+    d = a[0]['Truth']
+    assert d['valid'] == True
+    assert d['evidence'] == ['exhibit A', 'exhibit B', 'exhibit C']
+
+
+def test_pleads():
+    d1 = Defence(db, 'convo1')
+    d1.reset()
+    d1.save()
+    acc1 = d1.add_accusation("acc1")
+    acc2 = d1.add_accusation("acc2")
+    acc3 = d1.add_accusation("acc3")
+    acc4 = d1.add_accusation("acc4")
+    d1.plead(acc1, 'agree')
+    d1.plead(acc2, 'deny')
+    d1.plead(acc3, 'withhold')
+
+    ags = d1.get_agreed()
+    dns = d1.get_denied()
+    whs = d1.get_withheld()
+    assert len(ags) == 1
+    assert len(dns) == 1
+    assert len(whs) == 2
+    assert ags[0]['accusation'] == 'acc1'
+    assert dns[0]['accusation'] == 'acc2'
+    assert whs[0]['accusation'] == 'acc3'
+    assert whs[1]['accusation'] == 'acc4'
+
+    d1.plead(acc1, 'withhold')
+    d1.plead(acc2, 'withhold')
+    assert d1.get_agreed() == []
+    assert d1.get_denied() == []
+
+    d1.plead(acc1, 'deny')
+    d1.plead(acc2, 'deny')
+    d1.plead(acc3, 'deny')
+    d1.plead(acc4, 'deny')
+    assert d1.get_withheld() == []
 
 
 def test_determine_next_defence():
     d1 = Defence(db, 'convo1')
     d1.reset()
     d1.save()
-    assert d1.determine_next_defence() is None
+    assert d1.determine_next_question() is None
 
-    d1.add_accusation('acc1')
-    d1.add_accusation('acc2')
-    assert d1.determine_next_defence() == {'acc_id': 0, 'acc': 'acc1', 'def': 'Truth'}
+    acw = d1.add_accusation('accW')
+    aca = d1.add_accusation('accA')
+    ac1 = d1.add_accusation('acc1')
+    ac2 = d1.add_accusation('acc2')
+    assert d1.determine_next_question() == {'acc_id': acw, 'acc': 'accW', 'qst': 'plead'}
+    d1.plead(acw, 'withhold')
+    assert d1.determine_next_question() == {'acc_id': aca, 'acc': 'accA', 'qst': 'plead'}
+    d1.plead(aca, 'agree')
+    assert d1.determine_next_question() == {'acc_id': ac1, 'acc': 'acc1', 'qst': 'plead'}
+    d1.plead(ac1, 'deny')
+    d1.plead(ac2, 'deny')
 
-    d1.add_defence(0, 'Truth', False)
-    assert d1.determine_next_defence() == {'acc_id': 0, 'acc': 'acc1', 'def': 'Absolute Privilege'}
+    assert d1.determine_next_question() == {'acc_id': ac1, 'acc': 'acc1', 'qst': 'Truth'}
 
-    d1.add_defence(0, 'Absolute Privilege', True)
-    assert d1.determine_next_defence() == {'acc_id': 0, 'acc': 'acc1', 'def': 'Qualified Privilege'}
+    d1.add_defence(ac1, 'Truth', False)
+    assert d1.determine_next_question() == {'acc_id': ac1, 'acc': 'acc1', 'qst': 'Absolute Privilege'}
 
-    d1.add_defence(0, 'Qualified Privilege', True)
-    d1.add_defence(0, 'Fair Comment', False)
-    assert d1.determine_next_defence() == {'acc_id': 0, 'acc': 'acc1', 'def': 'Responsible Communication'}
+    d1.add_defence(ac1, 'Absolute Privilege', True)
+    assert d1.determine_next_question() == {'acc_id': ac1, 'acc': 'acc1', 'qst': 'Qualified Privilege'}
 
-    d1.add_defence(0, 'Responsible Communication', False)
-    assert d1.determine_next_defence() == {'acc_id': 1, 'acc': 'acc2', 'def': 'Truth'}
+    d1.add_defence(ac1, 'Qualified Privilege', True)
+    d1.add_defence(ac1, 'Fair Comment', False)
+    assert d1.determine_next_question() == {'acc_id': ac1, 'acc': 'acc1', 'qst': 'Responsible Communication'}
 
-    d1.add_defence(1, 'Truth', True)
-    assert d1.determine_next_defence() == {'acc_id': 1, 'acc': 'acc2', 'def': 'Absolute Privilege'}
+    d1.add_defence(ac1, 'Responsible Communication', False)
+    assert d1.determine_next_question() == {'acc_id': ac2, 'acc': 'acc2', 'qst': 'Truth'}
 
-    d1.add_defence(1, 'Absolute Privilege', False)
-    d1.add_defence(1, 'Qualified Privilege', False)
-    d1.add_defence(1, 'Fair Comment', False)
-    d1.add_defence(1, 'Responsible Communication', False)
-    assert d1.determine_next_defence() is None
+    d1.add_defence(ac2, 'Truth', True)
+    assert d1.determine_next_question() == {'acc_id': ac2, 'acc': 'acc2', 'qst': 'Absolute Privilege'}
+
+    d1.add_defence(ac2, 'Absolute Privilege', False)
+    d1.add_defence(ac2, 'Qualified Privilege', False)
+    d1.add_defence(ac2, 'Fair Comment', False)
+    d1.add_defence(ac2, 'Responsible Communication', False)
+    assert d1.determine_next_question() is None
+
+
+def test_report():
+    d1 = Defence(db, 'convo1')
+    d1.reset()
+    d1.save()
+    acw = d1.add_accusation('accW')
+    aca = d1.add_accusation('accA')
+    ac1 = d1.add_accusation('acc1')
+    ac2 = d1.add_accusation('acc2')
+    d1.plead(acw, 'withhold')
+    d1.plead(aca, 'agree')
+    d1.plead(ac1, 'deny')
+    d1.plead(ac2, 'deny')
+    d1.add_defence(ac1, 'Truth', True)
+    d1.add_defence(ac1, 'Absolute Privilege', False)
+    d1.add_defence(ac1, 'Qualified Privilege', True)
+    d1.add_defence(ac2, 'Fair Comment', True)
+
+    report = d1.report()
+    assert report == "You may have been sued. You agree with the claims of accA. " \
+                     "You cannot respond to claims of accW. You deny the allegations of acc1, acc2."
+
+    d2 = Defence(db, 'convo2')
+    d2.reset()
+    d2.save()
+    d2.set_sued(True)
+    report = d2.report()
+    assert report == "You have been sued."
+
+    d2.set_sued(False)
+    report = d2.report()
+    assert report == "You have not been sued."
