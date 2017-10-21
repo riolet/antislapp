@@ -130,7 +130,7 @@ class Form18A:
         self.writer.append(tail)
 
         if not os.path.exists(os.path.dirname(self.path)):
-            os.mkdir(os.path.dirname(self.path))
+            os.makedirs(os.path.dirname(self.path))
         self.writer.write()
 
     def get_link(self):

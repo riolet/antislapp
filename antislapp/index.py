@@ -5,6 +5,8 @@ import sys
 import web
 BASE_FOLDER = os.path.dirname(__file__)
 DB_PATH = os.path.join(BASE_FOLDER, 'sessions', 'sqlite.db')
+if not os.path.exists(os.path.dirname(DB_PATH)):
+    os.makedirs(os.path.dirname(DB_PATH))
 sys.path.append(os.path.join(BASE_FOLDER, os.path.pardir))  # this could be executed from any directory
 
 
@@ -35,6 +37,8 @@ urls = ("/fulfill", "pages.fulfill.Fulfill",
         "/.*", "pages.debug.Debug")
 app = web.application(urls, globals())
 render = web.template.render(os.path.join(BASE_FOLDER, 'templates'))
+
+# session
 web.config.session_parameters['cookie_path'] = "/"
 old_debug = web.config.debug
 web.config.debug = False  # to quiet stderr output
