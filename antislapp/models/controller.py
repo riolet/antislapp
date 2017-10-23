@@ -1,7 +1,7 @@
 from antislapp import index
 from antislapp.models.defence import Defence
 from antislapp.models.form18a import Form18A
-
+from antislapp.models.definitions import definitions
 
 class Controller:
     def __init__(self, conversation_id, default_response):
@@ -44,6 +44,11 @@ class Controller:
 
     def add_accusation(self, accusation):
         self.defence.add_accusation(accusation)
+
+    def get_definition(self, term):
+        dfn = definitions.get(term, "That term isn't in the dictionary")
+        self.response['speech'] = dfn
+        self.response['displayText'] = dfn
 
     def done_accusations(self):
         next = self.defence.determine_next_question()

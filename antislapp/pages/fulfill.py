@@ -103,6 +103,8 @@ class Fulfill:
             controller.report()
         elif request['action'] == 'clear_all':
             controller.reset()
+        elif request['action'] == 'definition':
+            controller.get_definition(request['params']['definition_terms'])
         else:
             pass
 
