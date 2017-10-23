@@ -76,7 +76,30 @@ class Controller:
     def defence_check(self, context, params):
         cid = int(float(context['acc_id']))
         self.defence.add_defence(cid, context['qst'], params['valid'])
-        self.done_accusations()
+        if params['valid']:
+            self.response['contextOut'] = [{
+                'name': 'currentacc',
+                'lifespan': 2,
+                'parameters': context
+            }]
+            self.response['followupEvent'] = {
+                'name': 'trigger-evidence',
+                'data': {}
+            }
+            del self.response['speech']  # required to be absent
+            del self.response['displayText']  # required to be absent
+        else:
+            self.done_accusations()
+
+    def add_evidence(self, context, evidence):
+        cid = int(float(context['acc_id']))
+        defence = context['qst']
+        self.defence.add_evidence(cid, defence, evidence)
+        self.response['contextOut'] = [{
+            'name': 'currentacc',
+            'lifespan': 2,
+            'parameters': context
+        }]
 
     def report(self):
         report = self.defence.report()

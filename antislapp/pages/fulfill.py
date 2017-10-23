@@ -99,6 +99,8 @@ class Fulfill:
             controller.done_accusations()
         elif request['action'] in ('check-truth', 'check-absolute', 'check-qualified', 'check-fair', 'check-responsible'):
             controller.defence_check(request['contexts']['currentacc'], request['params'])
+        elif request['action'] == 'evidence':
+            controller.add_evidence(request['contexts']['currentacc'], request['params']['evidence'])
         elif request['action'] == 'report':
             controller.report()
         elif request['action'] == 'clear_all':
