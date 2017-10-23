@@ -46,7 +46,7 @@ class Controller:
         self.defence.add_accusation(accusation)
 
     def get_definition(self, term):
-        dfn = definitions.get(term, "That term isn't in the dictionary")
+        dfn = definitions.get(term.lower(), "That term isn't in the dictionary")
         self.response['speech'] = dfn
         self.response['displayText'] = dfn
 
