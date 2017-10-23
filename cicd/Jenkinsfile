@@ -1,0 +1,14 @@
+def appName="antislapp"
+def project="antislapp"
+def appDockerName="antislapp-docker"
+node{
+  stage("Checkout") {
+    checkout scm
+  }
+  stage("Build Image") {
+    openshiftBuild buildConfig: appDockerName, namespace: project
+  }
+  stage("Deploy") {
+    openshiftDeploy deploymentConfig: appName, namespace: project
+  }
+}
