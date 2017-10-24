@@ -12,9 +12,9 @@ class Controller:
         self.response = {
             'speech': default_response,
             'displayText': default_response,
-            #'event': {"name":"<event_name>","data":{"<parameter_name>":"<parameter_value>"}},
-            #'data': _,
-            #'contextOut': [{"name":"weather", "lifespan":2, "parameters":{"city":"Rome"}}],
+            # 'event': {"name":"<event_name>","data":{"<parameter_name>":"<parameter_value>"}},
+            # 'data': _,
+            # 'contextOut': [{"name":"weather", "lifespan":2, "parameters":{"city":"Rome"}}],
             # context name must be lowercase
             'source': 'riobot',
         }
@@ -29,12 +29,12 @@ class Controller:
 
     @staticmethod
     def join_list(items):
-        l = len(items)
-        if l == 0:
+        count = len(items)
+        if count == 0:
             joined = ''
-        elif l == 1:
+        elif count == 1:
             joined = items[0]
-        elif l == 2:
+        elif count == 2:
             joined = "{} and {}".format(*items)
         else:
             joined = "{}, and {}".format(", ".join(items[:-1]), items[-1])
@@ -52,18 +52,18 @@ class Controller:
         self.response['displayText'] = dfn
 
     def done_accusations(self):
-        next = self.defence.determine_next_question()
-        # next has .acc_id, .acc, .qst OR is None
-        if next is None:
+        next_question = self.defence.determine_next_question()
+        # next_question has .acc_id, .acc, .qst OR is None
+        if next_question is None:
             self.response['followupEvent'] = {'name': 'trigger-summary', 'data': {}}
         else:
             self.response['contextOut'] = [{
                 'name': 'currentacc',
                 'lifespan': 20,
-                'parameters': next
+                'parameters': next_question
             }]
             self.response['followupEvent'] = {
-                'name': self.defence_triggers[next['qst']],
+                'name': self.defence_triggers[next_question['qst']],
                 'data': {}
             }
         self.response.pop('speech', None)  # required to be absent
@@ -118,7 +118,7 @@ class Controller:
                 continue
 
             for defence in Defence.DEFENCES:
-                if defence in claim and claim[d]['valid']:
+                if defence in claim and claim[defence]['valid']:
                     facts = claim[defence].get('facts', [])
                     for fact in facts:
                         allegation = claim['accusation']
@@ -129,7 +129,8 @@ class Controller:
         form.set_facts(fact_paragraphs)
         form.write()
 
-        report = report + " Download statement of defence here: http://riobot.centralus.cloudapp.azure.com{}".format(form.get_link())
+        report = report + " Download your statement of defence here: " \
+                          "http://riobot.centralus.cloudapp.azure.com{}".format(form.get_link())
 
         self.response['speech'] = report
         self.response['displayText'] = report
