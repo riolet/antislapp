@@ -79,6 +79,10 @@ definitions = {
     'counsel': 'to advise or persuade a person; another term for lawyer as in “legal counsel”;',
     'cefendant': 'in a civil case, the person who is being sued and in a criminal case may be used in place of '
                  'the “accused”;',
+    'defamation': 'Defamation is communication about a person that tends to hurt the person’s reputation. It causes '
+                  'the reader or listener to think less of the person. The communication must be made to other people, '
+                  'not just to the person it’s about. If defamation is spoken, then it is called slander. If it is '
+                  'written, it is called libel. It can also be a gesture, which is a type of slander.',
     'disposition': 'the outcome of a case;',
     'docket': 'the list or schedule of court cases to be heard on a particular day; a brief record of the proceedings '
               'in the court for a particular day;',
@@ -120,6 +124,10 @@ definitions = {
     'justice of the peace': 'a judicial officer with authority to determine minor criminal offences and civil '
                             'proceedings as set out in a particular statute;',
     'leave': 'the permission of the court to proceed; for example, to “seek the leave of the court” to file an appeal;',
+    'libel': 'Libel is the type of defamation with a permanent record, like a newspaper, a letter, a website posting, '
+             'an email, a picture, or a radio or TV broadcast. If you can prove that someone libeled you, and that '
+             'person does not have a good defence, then a court will presume that you suffered damages and award you '
+             'money to pay for your damaged reputation.',
     'mandamus': 'an “extraordinary remedy” used by a superior court to require a lower court or tribunal to exercise '
                 'an authority that it has;',
     'master': 'a judicial officer of the Court of Queen’s Bench in Manitoba and who has authority to make procedural '
@@ -171,6 +179,8 @@ definitions = {
                            'Criminal Code provides for individual citizens to be able to prosecute a person that the '
                            'individual believes has committed a criminal offence and where the state or Crown refuses '
                            'to do so;',
+    'privilege': 'There’s two forms of privilege defence: absolute privilege and qualified privilege. '
+                 'Which do you mean?',
     'pro bono': 'a Latin term meaning “for the good”; used to describe a lawyer’s services that are provided free of '
                 'charge;',
     'probate': 'the determination of the court as to the validity of a will; the Probate Division of the Manitoba '
@@ -223,6 +233,14 @@ definitions = {
                 'specific date set for when the proceeding will be back before the court; often used in civil '
                 'proceedings where the court grants an adjournment “sine die” and it is the responsibility of the '
                 'parties to bring the matter back to court at a date and time that is agreeable to the parties;',
+    'slander': 'Slander is the type of defamation with no permanent record. Normally it’s a spoken statement. It can '
+               'also be a hand gesture or something similar. The law treats slander differently from libel: with '
+               'slander, you have to prove you suffered damages, in the form of financial loss, to get compensation. '
+               'But with libel, the law presumes you suffered damages. For example, say that Bill told John you were '
+               'a cheat, and then John refused to do business with you because of that. You sue Bill and prove that '
+               'you lost business with John because of what Bill said. Bill would have to pay you for the loss of '
+               'John’s business, but not for the general damage to your reputation. It can be very hard to prove this '
+               'sort of financial loss. That’s why most slander cases never go to court.',
     'solicitor and client costs': 'also called “lawyer and client costs”, refers to the court awarding costs to a '
                                   'party that include the legal fees (or portion thereof) of the party who has been '
                                   'awarded costs;',
