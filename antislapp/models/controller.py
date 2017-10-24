@@ -109,23 +109,22 @@ class Controller:
         form.set_denials([claim['accusation'] for claim in self.defence.get_denied()])
         form.set_admissions([claim['accusation'] for claim in self.defence.get_agreed()])
 
-        evidence = []
+        evidence_paragraphs = []
         claims = self.defence.get_claims()
         for i, claim in enumerate(claims):
             if claim['plead'] != 'deny':
                 continue
 
-            for d in Defence.DEFENCES:
-                if d in claim and claim[d]['valid']:
-                    e = claim[d].get('evidence', [])
-                    if len(e) > 1:
-                        p = 'The defendant denies "{}" with a defence of {}'.format(claim['accusation'],
-                                                                                    self.join_list(e))
-                        evidence.append(p)
-                    elif len(e) == 1:
-                        p = 'The defendant denies "{}" with a defence of {}'.format(claim['accusation'], e[0])
-                        evidence.append(p)
-        form.set_evidence(evidence)
+            for defence in Defence.DEFENCES:
+                if defence in claim and claim[d]['valid']:
+                    evidence = claim[defence].get('evidence', [])
+                    for fact in evidence:
+                        allegation = claim['accusation']
+                        fact = fact.replace('me', 'the defendant')
+                        fact = fact.replace('I', 'the defendant')
+                        p = 'With respect to allegations of "{}", {}'.format(allegation, fact)
+                        evidence_paragraphs.append(p)
+        form.set_evidence(evidence_paragraphs)
         form.write()
 
         report = report + " Download statement of defence here: http://riobot.centralus.cloudapp.azure.com{}".format(form.get_link())
