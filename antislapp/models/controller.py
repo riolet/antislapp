@@ -59,7 +59,7 @@ class Controller:
         else:
             self.response['contextOut'] = [{
                 'name': 'currentacc',
-                'lifespan': 2,
+                'lifespan': 20,
                 'parameters': next
             }]
             self.response['followupEvent'] = {
@@ -81,7 +81,7 @@ class Controller:
         if params['valid']:
             self.response['contextOut'] = [{
                 'name': 'currentacc',
-                'lifespan': 2,
+                'lifespan': 20,
                 'parameters': context
             }]
             self.response['followupEvent'] = {
@@ -99,7 +99,7 @@ class Controller:
         self.defence.add_fact(cid, defence, fact)
         self.response['contextOut'] = [{
             'name': 'currentacc',
-            'lifespan': 2,
+            'lifespan': 20,
             'parameters': context
         }]
 
