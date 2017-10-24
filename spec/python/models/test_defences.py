@@ -5,7 +5,7 @@ from antislapp import index
 db = index.db
 
 
-def test_get_save():
+def test_save():
     d1 = Defence(db, 'convo1')
     d2 = Defence(db, 'convo2')
     d1.reset()
@@ -16,52 +16,63 @@ def test_get_save():
     d1.add_accusation('libel')
     d2.add_accusation('slander')
 
-    d1acc = [acc['accusation'] for acc in d1.get_accusations()]
-    d2acc = [acc['accusation'] for acc in d2.get_accusations()]
+    d1acc = [acc['accusation'] for acc in d1.get_claims()]
+    d2acc = [acc['accusation'] for acc in d2.get_claims()]
     assert d1acc == ['libel']
     assert d2acc == ['slander']
 
     d1b = Defence(db, 'convo1')
     d2b = Defence(db, 'convo2')
-    assert d1b.get_accusations() == []
-    assert d2b.get_accusations() == []
+    assert d1b.get_claims() == []
+    assert d2b.get_claims() == []
 
     d1.save()
     d2.save()
 
     d1c = Defence(db, 'convo1')
     d2c = Defence(db, 'convo2')
-    d1cacc = [acc['accusation'] for acc in d1c.get_accusations()]
-    d2cacc = [acc['accusation'] for acc in d2c.get_accusations()]
+    d1cacc = [acc['accusation'] for acc in d1c.get_claims()]
+    d2cacc = [acc['accusation'] for acc in d2c.get_claims()]
     assert d1cacc == ['libel']
     assert d2cacc == ['slander']
+
+
+def test_sued():
+    d1 = Defence(db, 'convo1')
+    d1.reset()
+    d1.save()
+    assert d1.report() == "In summary, you may have been sued."
+    d1.set_sued(True)
+    assert d1.report() == "In summary, you have been sued."
+    d1.set_sued(False)
+    assert d1.report() == "In summary, you have not been sued."
 
 
 def test_accusations():
     d1 = Defence(db, 'convo1')
     d1.reset()
     d1.save()
-    d1acc = [acc['accusation'] for acc in d1.get_accusations()]
+    d1acc = [acc['accusation'] for acc in d1.get_claims()]
     assert d1acc == []
 
     d1.add_accusation('acc1')
-    d1acc = [acc['accusation'] for acc in d1.get_accusations()]
+    d1acc = [acc['accusation'] for acc in d1.get_claims()]
     assert d1acc == ['acc1']
 
     d1.add_accusation('acc2')
-    d1acc = [acc['accusation'] for acc in d1.get_accusations()]
+    d1acc = [acc['accusation'] for acc in d1.get_claims()]
     assert d1acc == ['acc1', 'acc2']
 
     d1.add_accusation('acc3')
-    d1acc = [acc['accusation'] for acc in d1.get_accusations()]
+    d1acc = [acc['accusation'] for acc in d1.get_claims()]
     assert d1acc == ['acc1', 'acc2', 'acc3']
 
     d1b = Defence(db, 'convo1')
-    assert d1b.get_accusations() == []
+    assert d1b.get_claims() == []
 
     d1.save()
     d1c = Defence(db, 'convo1')
-    d1cacc = [acc['accusation'] for acc in d1c.get_accusations()]
+    d1cacc = [acc['accusation'] for acc in d1c.get_claims()]
     assert d1cacc == ['acc1', 'acc2', 'acc3']
 
 
@@ -81,7 +92,7 @@ def test_plead():
     d1.plead(acc1, "agree")
     d1.plead(acc2, "deny")
     d1.plead(acc3, "withhold")
-    accs = d1.get_accusations()
+    accs = d1.get_claims()
     assert accs == [
         {'accusation': 'acc1',
          'plead': 'agree'},
@@ -104,17 +115,17 @@ def test_defence():
         d1.add_defence(acc1, 'AboveTheLaw', True)
 
     d1.add_defence(acc1, 'Truth', 'true')
-    a = d1.get_accusations()
+    a = d1.get_claims()
     assert 'Truth' in a[0]
     assert a[0]['Truth']['valid'] == True
 
     d1.add_defence(acc1, 'Truth', 'false')
-    a = d1.get_accusations()
+    a = d1.get_claims()
     assert 'Truth' in a[0]
     assert a[0]['Truth']['valid'] == True
 
     d1.add_defence(acc1, 'Truth', False)
-    a = d1.get_accusations()
+    a = d1.get_claims()
     assert 'Truth' in a[0]
     assert a[0]['Truth']['valid'] == False
 
@@ -122,7 +133,7 @@ def test_defence():
     d1.add_defence(acc1, 'Qualified Privilege', False)
     d1.add_defence(acc1, 'Fair Comment', False)
     d1.add_defence(acc1, 'Responsible Communication', False)
-    a = d1.get_accusations()
+    a = d1.get_claims()
     assert 'Truth' in a[0]
     assert 'Absolute Privilege' in a[0]
     assert 'Qualified Privilege' in a[0]
@@ -130,7 +141,7 @@ def test_defence():
     assert 'Responsible Communication' in a[0]
 
 
-def test_evidence():
+def test_facts():
     d1 = Defence(db, 'convo1')
     d1.reset()
     d1.save()
@@ -138,21 +149,21 @@ def test_evidence():
     d1.add_defence(acc1, 'Truth', True)
     d1.add_defence(acc1, 'Fair Comment', True)
     with pytest.raises(IndexError):
-        d1.add_evidence(1000, 'Truth', 'he said she said')
+        d1.add_fact(1000, 'Truth', 'he said she said')
 
     with pytest.raises(ValueError):
-        d1.add_evidence(acc1, 'AboveTheLaw', 'she said he said')
+        d1.add_fact(acc1, 'AboveTheLaw', 'she said he said')
 
-    d1.add_evidence(acc1, 'Truth', 'exhibit A')
-    d1.add_evidence(acc1, 'Truth', 'exhibit B')
-    d1.add_evidence(acc1, 'Truth', 'exhibit C')
-    a = d1.get_accusations()
+    d1.add_fact(acc1, 'Truth', 'exhibit A')
+    d1.add_fact(acc1, 'Truth', 'exhibit B')
+    d1.add_fact(acc1, 'Truth', 'exhibit C')
+    a = d1.get_claims()
     d = a[0]['Truth']
     assert d['valid'] == True
-    assert d['evidence'] == ['exhibit A', 'exhibit B', 'exhibit C']
+    assert d['facts'] == ['exhibit A', 'exhibit B', 'exhibit C']
 
 
-def test_pleads():
+def test_get_pleads():
     d1 = Defence(db, 'convo1')
     d1.reset()
     d1.save()
@@ -248,16 +259,16 @@ def test_report():
     d1.add_defence(ac2, 'Fair Comment', True)
 
     report = d1.report()
-    assert report == "You may have been sued. You agree with the claims of accA. " \
-                     "You cannot respond to claims of accW. You deny the allegations of acc1, acc2."
+    assert report == 'In summary, you may have been sued. You agree with the claims of "accA". ' \
+                     'You deny the allegations of "acc1", "acc2". You cannot respond to claims of "accW".'
 
     d2 = Defence(db, 'convo2')
     d2.reset()
     d2.save()
     d2.set_sued(True)
     report = d2.report()
-    assert report == "You have been sued."
+    assert report == "In summary, you have been sued."
 
     d2.set_sued(False)
     report = d2.report()
-    assert report == "You have not been sued."
+    assert report == "In summary, you have not been sued."

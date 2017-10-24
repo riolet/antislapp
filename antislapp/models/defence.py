@@ -11,10 +11,10 @@ import web
 #       plead: agree/deny/withhold
 #       Truth:
 #           valid: true/false
-#           evidence: ['evidence1', 'evidence2']
+#           facts: ['facts1', 'facts2']
 #       Absolute Privilege:
 #           valid: ...
-#           evidence: [...]
+#           facts: [...]
 #       ...
 #       },
 #       {accusation: blah blah Y
@@ -96,16 +96,16 @@ class Defence:
         context[defence] = {}
         context[defence]['valid'] = bool(valid)
 
-    def add_evidence(self, accusation_id, defence, evidence):
+    def add_fact(self, accusation_id, defence, facts):
         # Raises IndexError on missing accusation_id
         # Raises ValueError if defence has not been pleaded.
         context = self.data['claims'][accusation_id]
         if defence not in context:
             raise ValueError
-        if 'evidence' in context[defence]:
-            context[defence]['evidence'].append(evidence)
+        if 'facts' in context[defence]:
+            context[defence]['facts'].append(facts)
         else:
-            context[defence]['evidence'] = [evidence]
+            context[defence]['facts'] = [facts]
 
     def get_agreed(self):
         agreed = []
@@ -168,9 +168,9 @@ class Defence:
         summary = "In summary, you {sued}been sued. ".format(sued=sued)
         if agrees:
             summary += p_agree
-        if withholds:
-            summary += p_withhold
         if denies:
             summary += p_deny
+        if withholds:
+            summary += p_withhold
         return summary.strip()
 

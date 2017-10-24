@@ -57,9 +57,7 @@ class Fulfill:
         raw_contexts = data.get('result', {}).get('contexts', [])
         contexts = {}
         for ctx in raw_contexts:
-            contexts[ctx['name']] = ctx['parameters']
-            if 'lifespan' not in contexts[ctx['name']]:
-                contexts[ctx['name']]['lifespan'] = ctx['lifespan']
+            contexts[ctx['name']] = ctx
         return contexts
 
     def decode_inbound(self, inbound):
@@ -121,15 +119,20 @@ class Fulfill:
     def POST(self):
         inbound = web.data()
 
+        request = None
+        response = None
         try:
             request = self.decode_inbound(inbound)
             response = self.process_request(request)
         except Exception as e:
             traceback.print_exc()
-            response = {
-                'speech': "error: {}".format(e),
-                'displayText': "error: {}".format(e)
-            }
+            if request is None:
+                request = 'error decoding request'
+            if response is None:
+                response = {
+                    'speech': "error: {}".format(e),
+                    'displayText': "error: {}".format(e)
+                }
 
         outbound = self.prepare_response(response)
 

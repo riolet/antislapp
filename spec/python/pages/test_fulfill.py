@@ -1,4 +1,5 @@
 from antislapp.pages import fulfill
+from antislapp import index
 
 
 sample_data1 = '{"id":"9975da59-64fb-4c65-a4e8-e98e55ee9a82","timestamp":"2017-10-04T17:57:43.466Z","lang":"en","result":{"source":"agent","resolvedQuery":"weather for today","speech":"","action":"","actionIncomplete":false,"parameters":{"date":"2017-10-04","geo-city":""},"contexts":[],"metadata":{"intentId":"5fcddff3-761b-47d8-a551-acf6bbbfb7ac","webhookUsed":"true","webhookForSlotFillingUsed":"false","intentName":"Weather"},"fulfillment":{"speech":"I\\u0027m not sure about the weather on 2017-10-04","messages":[{"type":0,"id":"1222c926-dc5d-4d10-9635-8cf5ea305c30","speech":"I\\u0027m not sure about the weather on 2017-10-04"}]},"score":1.0},"status":{"code":200,"errorType":"success"},"sessionId":"a00ab1e4-269e-4a3a-bf67-702877dfbb1c"}'
@@ -35,7 +36,7 @@ data1 = {
 
 
 # multi-part conversation, gathering all required items. Only the last message, once all required parameters are filled, is submitted for fulfillment.
-sample_data2 = '{"id":"848e2b19-6a44-4df8-9328-e1d5aeba5b24","timestamp":"2017-10-04T19:34:20.19Z","lang":"en","result":{"source":"agent","resolvedQuery":"Austin","speech":"","action":"","actionIncomplete":false,"parameters":{"date":"2017-10-05","geo-city":"Austin"},"contexts":[],"metadata":{"intentId":"5fcddff3-761b-47d8-a551-acf6bbbfb7ac","webhookUsed":"true","webhookForSlotFillingUsed":"false","intentName":"Weather"},"fulfillment":{"speech":"I don\\u0027t know the weather for 2017-10-05 in Austin","messages":[{"type":0,"id":"130e561f-b206-4cea-b03c-42a2ebf45ea4","speech":"I don\\u0027t know the weather for 2017-10-05 in Austin"}]},"score":1.0},"status":{"code":200,"errorType":"success"},"sessionId":"a00ab1e4-269e-4a3a-bf67-702877dfbb1c"}'
+sample_data2 = '{"id":"848e2b19-6a44-4df8-9328-e1d5aeba5b24","timestamp":"2017-10-04T19:34:20.19Z","lang":"en","result":{"source":"agent","resolvedQuery":"Austin","speech":"","action":"bogus","actionIncomplete":false,"parameters":{"date":"2017-10-05","geo-city":"Austin"},"contexts":[],"metadata":{"intentId":"5fcddff3-761b-47d8-a551-acf6bbbfb7ac","webhookUsed":"true","webhookForSlotFillingUsed":"false","intentName":"Weather"},"fulfillment":{"speech":"I don\\u0027t know the weather for 2017-10-05 in Austin","messages":[{"type":0,"id":"130e561f-b206-4cea-b03c-42a2ebf45ea4","speech":"I don\\u0027t know the weather for 2017-10-05 in Austin"}]},"score":1.0},"status":{"code":200,"errorType":"success"},"sessionId":"a00ab1e4-269e-4a3a-bf67-702877dfbb1c"}'
 data2 = {
     u'id': u'848e2b19-6a44-4df8-9328-e1d5aeba5b24',
     u'lang': u'en',
@@ -68,7 +69,7 @@ data2 = {
 
 
 # "what's the weather in paris today?"
-sample_data3 = '{"id":"443f92e4-547a-4fa6-b045-2680e0db487d","timestamp":"2017-10-04T22:14:46.033Z","lang":"en","result":{"source":"agent","resolvedQuery":"What\\u0027s the weather in paris today","speech":"","action":"","actionIncomplete":false,"parameters":{"date":"2017-10-04","geo-city":"Paris"},"contexts":[{"name":"location","parameters":{"date":"2017-10-04","geo-city":"Paris","date.original":"today","geo-city.original":"paris"},"lifespan":5}],"metadata":{"intentId":"5fcddff3-761b-47d8-a551-acf6bbbfb7ac","webhookUsed":"true","webhookForSlotFillingUsed":"false","intentName":"Weather"},"fulfillment":{"speech":"I don\\u0027t know the weather for 2017-10-04 in Paris","messages":[{"type":0,"id":"3e4b57d1-312e-4c23-add2-7fc43d9b2c98","speech":"I don\\u0027t know the weather for 2017-10-04 in Paris"}]},"score":0.9200000166893005},"status":{"code":200,"errorType":"success"},"sessionId":"c15a6d3a-305c-3f00-af2c-3282aef39aa3"}'
+sample_data3 = '{"id":"443f92e4-547a-4fa6-b045-2680e0db487d","timestamp":"2017-10-04T22:14:46.033Z","lang":"en","result":{"source":"agent","resolvedQuery":"What\\u0027s the weather in paris today","speech":"","action":"checking","actionIncomplete":false,"parameters":{"date":"2017-10-04","geo-city":"Paris"},"contexts":[{"name":"location","parameters":{"date":"2017-10-04","geo-city":"Paris","date.original":"today","geo-city.original":"paris"},"lifespan":5}],"metadata":{"intentId":"5fcddff3-761b-47d8-a551-acf6bbbfb7ac","webhookUsed":"true","webhookForSlotFillingUsed":"false","intentName":"Weather"},"fulfillment":{"speech":"I don\\u0027t know the weather for 2017-10-04 in Paris","messages":[{"type":0,"id":"3e4b57d1-312e-4c23-add2-7fc43d9b2c98","speech":"I don\\u0027t know the weather for 2017-10-04 in Paris"}]},"score":0.9200000166893005},"status":{"code":200,"errorType":"success"},"sessionId":"c15a6d3a-305c-3f00-af2c-3282aef39aa3"}'
 data3 = {
     u'id': u'443f92e4-547a-4fa6-b045-2680e0db487d',
     u'lang': u'en',
@@ -150,7 +151,7 @@ data4 = {
     u'timestamp': u'2017-10-04T22:15:28.531Z'}
 
 
-def test_extract():
+def test_extract_parameters():
     ex = fulfill.Fulfill.extract_parameters
 
     assert ex(data1) == {u'date': u'2017-10-04', u'geo-city': u''}
@@ -159,7 +160,7 @@ def test_extract():
     assert ex(data4) == {u'date': u'2017-10-05', u'date-period': u'', u'geo-city': u'Paris'}
 
 
-def test_def_response():
+def test_extract_def_response():
     ex = fulfill.Fulfill.extract_default_response
 
     assert ex(data1) == u"I'm not sure about the weather on 2017-10-04"
@@ -176,15 +177,6 @@ def test_extract_action():
     assert ex(data4) == u''
 
 
-def test_join_list():
-    ex = fulfill.Fulfill.join_list
-    assert ex([]) == ''
-    assert ex(['a']) == 'a'
-    assert ex(['a', 'b']) == 'a and b'
-    assert ex(['a', 'b', 'c']) == 'a, b, and c'
-    assert ex(['a', 'b', 'c', 'd']) == 'a, b, c, and d'
-
-
 def test_extract_contexts():
     ex = fulfill.Fulfill.extract_contexts
 
@@ -193,30 +185,88 @@ def test_extract_contexts():
     assert ex(data3) == {
         u'location': {
             u'lifespan': 5,
-            u'date': u'2017-10-04',
-            u'date.original': u'today',
-            u'geo-city': u'Paris',
-            u'geo-city.original': u'paris'}
+            u'name': u'location',
+            u'parameters': {
+                u'date': u'2017-10-04',
+                u'date.original': u'today',
+                u'geo-city': u'Paris',
+                u'geo-city.original': u'paris'}}
     }
     assert ex(data4) == {
         u'location': {
             u'lifespan': 5,
-            u'date': u'2017-10-05',
-            u'date-period': u'',
-            u'date-period.original': u'',
-            u'date.original': u'tomorrow',
-            u'geo-city': u'Paris',
-            u'geo-city.original': u''}
+            u'name': u'location',
+            u'parameters': {
+                u'date': u'2017-10-05',
+                u'date-period': u'',
+                u'date-period.original': u'',
+                u'date.original': u'tomorrow',
+                u'geo-city': u'Paris',
+                u'geo-city.original': u''}}
     }
 
 
-def test_summarize():
-    ex = fulfill.Fulfill.summarize
-    params = {}
-    assert ex(params) == "So, to summarize: you have not been sued and your words were untrue"
+def test_decode_inbound():
+    page = fulfill.Fulfill()
+    request = page.decode_inbound(sample_data1)
+    assert request == {
+        'db': index.db,
+        'params': {'date': '2017-10-04', 'geo-city': ''},
+        'default': 'I\'m not sure about the weather on 2017-10-04',
+        'action': '',
+        'conversation_id': 'a00ab1e4-269e-4a3a-bf67-702877dfbb1c',
+        'contexts': {}
+    }
 
-    params = {'sued': True, 'truth': True, 'truth-evidence': False, 'absolute': False, 'qualified': True}
-    assert ex(params) == "So, to summarize: you have been sued, " \
-                         "your words were true but you have no proof, " \
-                         "you weren't in a position of absolute privilege, " \
-                         "and you were in a position of qualified privilege"
+    request = page.decode_inbound(sample_data2)
+    assert request == {
+        'db': index.db,
+        'params': {'date': '2017-10-05', 'geo-city': 'Austin'},
+        'default': "I don't know the weather for 2017-10-05 in Austin",
+        'action': 'bogus',
+        'conversation_id': 'a00ab1e4-269e-4a3a-bf67-702877dfbb1c',
+        'contexts': {}
+    }
+
+    request = page.decode_inbound(sample_data3)
+    from pprint import pprint
+    pprint(request)
+    assert request == {
+        'db': index.db,
+        'params': {u'date': u'2017-10-04', u'geo-city': u'Paris'},
+        'default': u"I don't know the weather for 2017-10-04 in Paris",
+        'action': u'checking',
+        'conversation_id': u'c15a6d3a-305c-3f00-af2c-3282aef39aa3',
+        'contexts': {u'location': {
+            u'lifespan': 5,
+            u'name': u'location',
+            u'parameters': {
+                u'date': u'2017-10-04',
+                u'date.original': u'today',
+                u'geo-city': u'Paris',
+                u'geo-city.original': u'paris'}}
+        }
+    }
+
+    request = page.decode_inbound(sample_data4)
+    assert request == {
+        'db': index.db,
+        'params': {'date': '2017-10-05', 'geo-city': 'Paris', 'date-period': ''},
+        'default': '',
+        'action': '',
+        'conversation_id': 'c15a6d3a-305c-3f00-af2c-3282aef39aa3',
+        'contexts': {
+            u'location': {
+                u'lifespan': 5,
+                u'name': u'location',
+                u'parameters': {
+                    u'date': u'2017-10-05',
+                    u'date-period': u'',
+                    u'date-period.original': u'',
+                    u'date.original': u'tomorrow',
+                    u'geo-city': u'Paris',
+                    u'geo-city.original': u''
+                }
+            }
+        }
+    }

@@ -1,5 +1,5 @@
 import web
-import index
+from antislapp import index
 
 
 class Debug:

@@ -3,6 +3,7 @@ from antislapp.models.defence import Defence
 from antislapp.models.form18a import Form18A
 from antislapp.models.definitions import definitions
 
+
 class Controller:
     def __init__(self, conversation_id, default_response):
         self.cid = conversation_id
@@ -43,7 +44,7 @@ class Controller:
         self.defence.set_sued(sued)
 
     def add_accusation(self, accusation):
-        self.defence.add_accusation(accusation)
+        return self.defence.add_accusation(accusation)
 
     def get_definition(self, term):
         dfn = definitions.get(term.lower(), "That term isn't in the dictionary")
@@ -52,7 +53,7 @@ class Controller:
 
     def done_accusations(self):
         next = self.defence.determine_next_question()
-        # next has .acc_id, .acc, .def OR is None
+        # next has .acc_id, .acc, .qst OR is None
         if next is None:
             self.response['followupEvent'] = {'name': 'trigger-summary', 'data': {}}
         else:
@@ -65,11 +66,12 @@ class Controller:
                 'name': self.defence_triggers[next['qst']],
                 'data': {}
             }
-        del self.response['speech']  # required to be absent
-        del self.response['displayText']  # required to be absent
+        self.response.pop('speech', None)  # required to be absent
+        self.response.pop('displayText', None)  # required to be absent
 
     def make_plea(self, context, params):
         cid = int(float(context['acc_id']))
+        # plead may be one of Defence.PLEADS ('agree', 'withhold', 'deny')
         self.defence.plead(cid, params['plead'])
         self.done_accusations()
 
@@ -83,18 +85,18 @@ class Controller:
                 'parameters': context
             }]
             self.response['followupEvent'] = {
-                'name': 'trigger-evidence',
+                'name': 'trigger-facts',
                 'data': {}
             }
-            del self.response['speech']  # required to be absent
-            del self.response['displayText']  # required to be absent
+            self.response.pop('speech', None)  # required to be absent
+            self.response.pop('displayText', None)  # required to be absent
         else:
             self.done_accusations()
 
-    def add_evidence(self, context, evidence):
+    def add_fact(self, context, fact):
         cid = int(float(context['acc_id']))
         defence = context['qst']
-        self.defence.add_evidence(cid, defence, evidence)
+        self.defence.add_fact(cid, defence, fact)
         self.response['contextOut'] = [{
             'name': 'currentacc',
             'lifespan': 2,
@@ -109,7 +111,7 @@ class Controller:
         form.set_denials([claim['accusation'] for claim in self.defence.get_denied()])
         form.set_admissions([claim['accusation'] for claim in self.defence.get_agreed()])
 
-        evidence_paragraphs = []
+        fact_paragraphs = []
         claims = self.defence.get_claims()
         for i, claim in enumerate(claims):
             if claim['plead'] != 'deny':
@@ -117,14 +119,14 @@ class Controller:
 
             for defence in Defence.DEFENCES:
                 if defence in claim and claim[d]['valid']:
-                    evidence = claim[defence].get('evidence', [])
-                    for fact in evidence:
+                    facts = claim[defence].get('facts', [])
+                    for fact in facts:
                         allegation = claim['accusation']
                         fact = fact.replace('me', 'the defendant')
                         fact = fact.replace('I', 'the defendant')
                         p = 'With respect to allegations of "{}", {}'.format(allegation, fact)
-                        evidence_paragraphs.append(p)
-        form.set_evidence(evidence_paragraphs)
+                        fact_paragraphs.append(p)
+        form.set_facts(fact_paragraphs)
         form.write()
 
         report = report + " Download statement of defence here: http://riobot.centralus.cloudapp.azure.com{}".format(form.get_link())

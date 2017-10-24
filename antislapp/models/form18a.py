@@ -16,7 +16,7 @@ class Form18A:
         self.admissions = []
         self.unanswered = []
         self.denials = []
-        self.evidence = []
+        self.facts = []
 
     def set_plaintiff(self, title):
         """
@@ -48,11 +48,11 @@ class Form18A:
         """
         self.denials = denials
 
-    def set_evidence(self, evidence):
+    def set_facts(self, facts):
         """
-        :type evidence: list[ str ]
+        :type facts: list[ str ]
         """
-        self.evidence = evidence
+        self.facts = facts
 
     def build_head(self):
         lines = [
@@ -99,8 +99,8 @@ class Form18A:
             self.numbered_paragraph(2, p_deny),
             self.numbered_paragraph(3, p_withheld),
         ]
-        for i, evidence in enumerate(self.evidence):
-            p = self.numbered_paragraph(i+4, evidence)
+        for i, fact in enumerate(self.facts):
+            p = self.numbered_paragraph(i+4, fact)
             lines.append(p)
 
         return '\n'.join(lines)
@@ -148,5 +148,5 @@ def test():
     r2.set_admissions(['4', '5', '7', '10'])
     r2.set_denials(['1', '2', '6', '9'])
     r2.set_unanswered(['3', '8'])
-    r2.set_evidence(['evidence article A', 'evidence article B', 'evidence article C'])
+    r2.set_facts(['facts article A', 'facts article B', 'facts article C'])
     r2.write()
