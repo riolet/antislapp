@@ -70,19 +70,19 @@ class Controller:
         self.response.pop('displayText', None)  # required to be absent
 
     def make_plea(self, context, params):
-        cid = int(float(context['acc_id']))
+        cid = int(float(context['parameters']['acc_id']))
         # plead may be one of Defence.PLEADS ('agree', 'withhold', 'deny')
         self.defence.plead(cid, params['plead'])
         self.done_accusations()
 
     def defence_check(self, context, params):
-        cid = int(float(context['acc_id']))
-        self.defence.add_defence(cid, context['qst'], params['valid'])
+        cid = int(float(context['parameters']['acc_id']))
+        self.defence.add_defence(cid, context['parameters']['qst'], params['valid'])
         if params['valid']:
             self.response['contextOut'] = [{
                 'name': 'currentacc',
                 'lifespan': 20,
-                'parameters': context
+                'parameters': context['parameters']
             }]
             self.response['followupEvent'] = {
                 'name': 'trigger-facts',
@@ -94,13 +94,13 @@ class Controller:
             self.done_accusations()
 
     def add_fact(self, context, fact):
-        cid = int(float(context['acc_id']))
-        defence = context['qst']
+        cid = int(float(context['parameters']['acc_id']))
+        defence = context['parameters']['qst']
         self.defence.add_fact(cid, defence, fact)
         self.response['contextOut'] = [{
             'name': 'currentacc',
             'lifespan': 20,
-            'parameters': context
+            'parameters': context['parameters']
         }]
 
     def report(self):
