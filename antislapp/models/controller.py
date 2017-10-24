@@ -124,7 +124,7 @@ class Controller:
                         allegation = claim['accusation']
                         fact = fact.replace('me', 'the defendant')
                         fact = fact.replace('I', 'the defendant')
-                        p = 'With respect to allegations of "{}", {}'.format(allegation, fact)
+                        p = 'With respect to allegations of "{}", the defendant claims {}'.format(allegation, fact)
                         fact_paragraphs.append(p)
         form.set_facts(fact_paragraphs)
         form.write()
