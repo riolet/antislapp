@@ -1,28 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>AntiSLAPP: Legal Defender</title>
-    <style>
+  <meta charset="UTF-8">
+  <title>AntiSLAPP: Legal Defender</title>
+  <!--<link rel="stylesheet" type="text/css" href="/static/css/home.css">-->
+<style>
+body, html, img, iframe {
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+.header {
+  background: tomato;
+  text-align: center;
+  padding: 10px;
+  width: 100%;
+}
+.footer {
+  background: lightgreen;
+  text-align: center;
+  padding: 2em 1em;
+  width: 100%;
+}
+.info {
+  background: cyan;
+  padding: 10px;
+  flex: 1 100%;
+}
+.dialogflow {
+  background: green;
+  padding: 0;
+  width: 400px;
+  height: 460px;
+  flex: 1 auto;
+  overflow: hidden;
+  position: relative;
+}
+img, iframe {
+    position: relative;
+    top: -80px;
+}
 
-    </style>
+.wrapper {
+  padding: 0;
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+}
+@media all and (min-width: 800px) {
+  .info { flex: 1 300px; }
+  .dialogflow { flex: 0 400px; }
+}
+
+</style>
 </head>
 <body>
-<!--
-*-----------------*
-|    Legal Def.   |
-*--------*--------*
-|  blah  | to     |
-|  blah  |   from |
-|  blah  | to     |
-|  blah  |   from |
-*--------*--------*
-|     By us       |
-*-----------------*
--->
-<h1>Legal Defender</h1>
-<p>Lorem ipsum</p>
-<p>Chat box</p>
-<p>&copy;2017 Riolet Corporation</p>
+<header class="header"><h1>Legal Defender</h1></header>
+<div class="wrapper">
+  <article class="info"><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus egestas mauris ac lacus vehicula, ac efficitur tellus auctor. Sed eu felis semper, fermentum nisl eget, lobortis neque. Duis vitae tortor purus. Curabitur ut imperdiet est. Aenean nibh mauris, varius vel magna sed, bibendum tempor nisl. Quisque semper mollis felis, malesuada volutpat turpis porttitor quis. Phasellus tristique diam nisi, eu finibus nibh scelerisque quis.</p></article>
+  <div class="dialogflow">
+    <img src="../static/img/test.png" width="400" height="540">
+    <!--<iframe width="400" height="540" src="https://console.dialogflow.com/api-client/demo/embedded/riobot"></iframe>-->
+  </div>
+</div>
+<footer class="footer">Copyright &copy;2017 Riolet Corporation</footer>
 </body>
 </html>
