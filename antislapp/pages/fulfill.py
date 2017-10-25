@@ -25,7 +25,7 @@ class Fulfill:
                 f.write("(json decode failed)\n")
                 pprint.pprint(inbound, f)
             f.write("\n==== translated ====\n")
-            pprint.pprint(request)
+            pprint.pprint(request, f)
             f.write("\n==== outbound ====\n")
             try:
                 pprint.pprint(json.loads(outbound), f)
@@ -135,7 +135,6 @@ class Fulfill:
                 }
 
         outbound = self.prepare_response(response)
-
         self.dump_error(inbound, request, outbound)
         web.header("Content-Type", "application/json")
         return outbound
