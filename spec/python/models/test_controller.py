@@ -75,7 +75,7 @@ def test_done_accusations():
         'followupEvent': {'name': 'trigger-plead', 'data': {}},
         'contextOut': [{
             'name': 'currentacc',
-            'lifespan': 2,
+            'lifespan': 20,
             'parameters': {
                 'acc': 'accu1',
                 'acc_id': acc_id,
@@ -88,19 +88,15 @@ def test_done_accusations():
 def test_make_plea():
     c = blank_controller()
     acc_id = c.add_accusation('accu1')
-    context = {
-        'acc_id': acc_id
-    }
-    params = {
-        'plead': 'agree'
-    }
+    context = {'parameters': {'acc_id': acc_id}}
+    params = {'plead': 'agree'}
     c.done_accusations()
     assert c.get_response() == {
         'source': 'riobot',
         'followupEvent': {'name': 'trigger-plead', 'data': {}},
         'contextOut': [{
             'name': 'currentacc',
-            'lifespan': 2,
+            'lifespan': 20,
             'parameters': {
                 'acc': 'accu1',
                 'acc_id': acc_id,
@@ -124,7 +120,7 @@ def test_make_plea():
 def test_defence_check():
     c = blank_controller()
     acc_id = c.add_accusation('accu1')
-    context = {'acc_id': acc_id}
+    context = {'parameters': {'acc_id': acc_id}}
     params = {'plead': 'deny'}
     c.make_plea(context, params)
     c.done_accusations()
@@ -133,7 +129,7 @@ def test_defence_check():
         'followupEvent': {'name': 'trigger-truth', 'data': {}},
         'contextOut': [{
             'name': 'currentacc',
-            'lifespan': 2,
+            'lifespan': 20,
             'parameters': {
                 'acc': 'accu1',
                 'acc_id': acc_id,
@@ -142,9 +138,11 @@ def test_defence_check():
         }]
     }
 
-    context = {'acc_id': acc_id,
-               'acc': 'accu1',
-               'qst': 'Truth'}
+    context = {'parameters': {
+        'acc_id': acc_id,
+        'acc': 'accu1',
+        'qst': 'Truth'}
+    }
     params = {'valid': False}
     c.defence_check(context, params)
     assert c.get_response() == {
@@ -152,7 +150,7 @@ def test_defence_check():
         'followupEvent': {'name': 'trigger-absolute', 'data': {}},
         'contextOut': [{
             'name': 'currentacc',
-            'lifespan': 2,
+            'lifespan': 20,
             'parameters': {
                 'acc': 'accu1',
                 'acc_id': acc_id,
@@ -161,9 +159,11 @@ def test_defence_check():
         }]
     }
 
-    context = {'acc_id': acc_id,
-               'acc': 'accu1',
-               'qst': 'Truth'}
+    context = {'parameters': {
+        'acc_id': acc_id,
+        'acc': 'accu1',
+        'qst': 'Truth'}
+    }
     params = {'valid': True}
     c.defence_check(context, params)
     assert c.get_response() == {
@@ -171,7 +171,7 @@ def test_defence_check():
         'followupEvent': {'name': 'trigger-facts', 'data': {}},
         'contextOut': [{
             'name': 'currentacc',
-            'lifespan': 2,
+            'lifespan': 20,
             'parameters': {
                 'acc': 'accu1',
                 'acc_id': acc_id,
@@ -184,18 +184,22 @@ def test_defence_check():
 def test_add_facts():
     c = blank_controller()
     acc_id = c.add_accusation('accu1')
-    context = {'acc_id': acc_id}
+    context = {'parameters': {'acc_id': acc_id}}
     params = {'plead': 'deny'}
     c.make_plea(context, params)
-    context = {'acc_id': acc_id,
-               'acc': 'accu1',
-               'qst': 'Truth'}
+    context = {'parameters': {
+        'acc_id': acc_id,
+        'acc': 'accu1',
+        'qst': 'Truth'}
+    }
     params = {'valid': True}
     c.defence_check(context, params)
 
-    context = {'acc_id': acc_id,
-               'acc': 'accu1',
-               'qst': 'Truth'}
+    context = {'parameters': {
+        'acc_id': acc_id,
+        'acc': 'accu1',
+        'qst': 'Truth'}
+    }
     params = {'valid': True}
     c.defence_check(context, params)
     assert c.get_response() == {
@@ -203,7 +207,7 @@ def test_add_facts():
         'followupEvent': {'name': 'trigger-facts', 'data': {}},
         'contextOut': [{
             'name': 'currentacc',
-            'lifespan': 2,
+            'lifespan': 20,
             'parameters': {
                 'acc': 'accu1',
                 'acc_id': acc_id,
@@ -212,9 +216,11 @@ def test_add_facts():
         }]
     }
 
-    context = {'acc_id': acc_id,
-               'acc': 'accu1',
-               'qst': 'Truth'}
+    context = {'parameters': {
+        'acc_id': acc_id,
+        'acc': 'accu1',
+        'qst': 'Truth'}
+    }
     fact = "fact 1"
     c.response = {
             'speech': c.default,
@@ -228,7 +234,7 @@ def test_add_facts():
         'source': 'riobot',
         'contextOut': [{
             'name': 'currentacc',
-            'lifespan': 2,
+            'lifespan': 20,
             'parameters': {
                 'acc': 'accu1',
                 'acc_id': acc_id,
