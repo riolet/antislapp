@@ -104,7 +104,7 @@ class Response:
 class Dialogue:
     def __init__(self, session_id, db):
         """
-        :type session: str
+        :type session_id: str
         :type db: web.DB
         """
         self.session_id = session_id[:36]
@@ -122,7 +122,7 @@ class Dialogue:
         return response
 
 
-class Interactive():
+class Interactive:
     def __init__(self):
         self.session = base64.encodestring(str(random.random())+str(random.random()))[:30]
         self.dialogue = Dialogue(self.session, index.db)
