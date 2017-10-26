@@ -93,6 +93,9 @@ class Response:
     def get_data(self):
         return self.fulfillment.get("data", {})
 
+    def get_parameters(self):
+        return self.result.get("parameters", {})
+
 
 class Dialogue:
     def __init__(self, session, db):
@@ -115,7 +118,6 @@ class Dialogue:
         return response
 
 
-
 class Interactive():
     def __init__(self):
         self.session = base64.encodestring(str(random.random())+str(random.random()))[:30]
@@ -129,5 +131,9 @@ class Interactive():
                 break
             elif msg == '_' and response:
                 print(response.raw)
+                continue
             response = self.dialogue.send_message(msg)
             print(response.get_speech())
+            data = response.get_data()
+            if data:
+                print("data: {}".format(repr(data)))

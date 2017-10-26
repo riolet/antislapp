@@ -18,7 +18,6 @@ class Controller:
             # 'data': _,
             # 'contextOut': [{"name":"weather", "lifespan":2, "parameters":{"city":"Rome"}}],
             # context name must be lowercase
-            'data': {'random': random.random()},
             'source': 'riobot',
         }
         self.defence_triggers = {
