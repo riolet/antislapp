@@ -7,7 +7,10 @@ body, html, img, iframe {
   border: 0;
 }
 body {
-  background: rgba(224, 242, 242, 1);
+  background: rgb(224, 242, 242);
+}
+html {
+  background: rgba(212, 212, 216);
 }
 .header {
   background: rgba(208, 208, 216, 1);
@@ -32,7 +35,7 @@ body {
   display: block;
   padding: 2em 1em;
   position: relative;
-  margin-top: 5em;
+  margin-top: 8em;
 }
 .footer::before {
   content: "";
@@ -56,7 +59,6 @@ p + p {
 .wrapper {
   padding: 0;
   max-width: 1127px;
-  min-height: 800px;
   margin: auto;
   display: flex;
   flex-flow: row wrap;
@@ -97,6 +99,7 @@ p + p {
 }
 .chattop {
   background: #7ab5ce;
+  background: linear-gradient(#7ab5ce 90%, #558ba2 100%);
   display: block;
   text-align: left;
   line-height: 2em;
@@ -116,4 +119,56 @@ img, iframe {
     flex: 2 auto;
     border-left: 2px solid rgba(0,0,0,0.05);
   }
+}
+/*
+  =======  Chat Messages  =======
+*/
+.chatbox {
+  display: block;
+  width: 400px;
+  background: white;
+}
+.chatbox .chatmsgs {
+  display: block;
+  position: relative;
+  height: 410px;
+  overflow-y: scroll;
+}
+.chatbox .chatmsgs div {
+  display: inline-block;
+  padding: 0.5em 1em;
+  border-radius: 3px;
+  margin: 0.75em;
+  margin-bottom: 0;
+  clear: both;
+  font-family: sans;
+}
+.chatbox .chatmsgs div:last-child {
+  margin-bottom: 0.5em
+}
+.chatmsgs .msg-user {
+  float: left;
+  background: #EFEFEF;
+}
+.chatmsgs .msg-ai {
+  float: right;
+  background: #A5D175;
+  color: white;
+}
+.chatbox .chatinput {
+  clear: both;
+  display: block;
+  width: 100%;
+  height: 50px;
+  position: relative;
+}
+.chatinput input {
+  box-sizing: border-box;
+  border: 1px solid rgba(0,0,0,0.1);
+  width: 100%;
+  height: 100%;
+  background: #EEE;
+  color: #666;
+  font-size: 1.1em;
+  padding: 0 1em;
 }
