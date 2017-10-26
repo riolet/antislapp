@@ -1,3 +1,5 @@
+import re
+import random
 from antislapp import index
 from antislapp.models.defence import Defence
 from antislapp.models.form18a import Form18A
@@ -16,6 +18,7 @@ class Controller:
             # 'data': _,
             # 'contextOut': [{"name":"weather", "lifespan":2, "parameters":{"city":"Rome"}}],
             # context name must be lowercase
+            'data': {'random': random.random()},
             'source': 'riobot',
         }
         self.defence_triggers = {
@@ -122,8 +125,9 @@ class Controller:
                     facts = claim[defence].get('facts', [])
                     for fact in facts:
                         allegation = claim['accusation']
-                        fact = fact.replace('me', 'the defendant')
-                        fact = fact.replace('I', 'the defendant')
+                        fact = re.sub(r'\bme\b', 'the defendant', fact)
+                        fact = re.sub(r"\b[Ii]('m|\sam)\b", 'the defendant is', fact)
+                        fact = re.sub(r'\b[Ii]\b', 'the defendant', fact)
                         p = 'With respect to allegations of "{}", the defendant claims {}'.format(allegation, fact)
                         fact_paragraphs.append(p)
         form.set_facts(fact_paragraphs)
