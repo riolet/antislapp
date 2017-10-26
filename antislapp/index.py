@@ -34,6 +34,7 @@ def parse_sql_file(path, replacements):
 
 
 urls = ("/fulfill", "pages.fulfill.Fulfill",
+        "/converse", "pages.converse.Converse",
         "/debug", "pages.debug.Debug",
         "/.*", "pages.home.Home")
 app = web.application(urls, globals())

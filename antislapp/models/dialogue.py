@@ -84,11 +84,15 @@ class Response:
     def __init__(self, response):
         self.raw = response.read()
         self.data = json.loads(self.raw)
+        self.error = self.data.get('status', {})
         self.result = self.data.get("result", {})
         self.fulfillment = self.result.get("fulfillment", {})
 
     def get_speech(self):
-        return self.fulfillment.get("speech", "Error getting speech")
+        speech = self.fulfillment.get("speech", None)
+        if speech is None:
+            speech = self.error.get('errorDetails', None)
+        return speech or "Error getting speech"
 
     def get_data(self):
         return self.fulfillment.get("data", {})
@@ -98,12 +102,12 @@ class Response:
 
 
 class Dialogue:
-    def __init__(self, session, db):
+    def __init__(self, session_id, db):
         """
         :type session: str
         :type db: web.DB
         """
-        self.session = session
+        self.session_id = session_id[:36]
         self.db = db
         self.ai = apiai.ApiAI(CLIENT_ACCESS_TOKEN)
         self.lang = 'en'
@@ -111,7 +115,7 @@ class Dialogue:
     def send_message(self, msg):
         request = self.ai.text_request()
         request.lang = self.lang
-        request.session_id = self.session
+        request.session_id = self.session_id
         request.query = msg
         response = Response(request.getresponse())
         # TODO: save any parts of response desired. (e.g. message history. data. params.)
