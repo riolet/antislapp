@@ -132,8 +132,8 @@ class Controller:
         form.set_facts(fact_paragraphs)
         form.write()
 
-        report = report + " Download your statement of defence here: " \
-                          "http://riobot.centralus.cloudapp.azure.com{}".format(form.get_link())
+        report = report + "\n\n Download your statement of defence " \
+                          "[http://riobot.centralus.cloudapp.azure.com{}](here).".format(form.get_link())
 
         self.response['speech'] = report
         self.response['displayText'] = report

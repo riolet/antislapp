@@ -50,10 +50,46 @@ function POST(destination, data, cb_success, cb_fail) {
     //<div class="msg-user">Hello</div>
     let bubble = document.createElement("DIV");
     bubble.className = "msg-ai";
-    bubble.innerText = msg;
+    dialog.msg_into_element(bubble, msg);
     dialog.chatbox.appendChild(bubble);
     //scroll to bottom / scroll to visible
     dialog.chatbox.scrollTop = dialog.chatbox.scrollHeight;
+  };
+
+  dialog.make_links = function (el, text) {
+    let i;
+    let link;
+
+    i = text.indexOf("[");
+    if (i > 0) {
+      el.appendChild(document.createTextNode(text.slice(0, i)))
+      text = text.slice(i)
+    }
+    i = text.indexOf("]");
+  }
+
+  dialog.msg_into_element = function (el, text) {
+    const regex = /([^\)]*)\[([^\]]+)\]\(([^)]+)\)([^\[]+)/g;
+    let m;
+    let link;
+
+    while ((m = regex.exec(text)) !== null) {
+      // This is necessary to avoid infinite loops with zero-width matches
+      if (m.index === regex.lastIndex) {
+        regex.lastIndex++;
+      }
+
+      // The result can be accessed through the `m`-variable.
+      el.appendChild(document.createTextNode(m[1]));
+      link = document.createElement("A");
+      link.href = m[2];
+      link.innerText = m[3];
+      el.appendChild(link);
+      el.appendChild(document.createTextNode(m[4]));
+    }
+    if (text.match(regex) === null) {
+      el.innerText = text;
+    }
   };
 
   dialog.user_presses_enter = function () {
