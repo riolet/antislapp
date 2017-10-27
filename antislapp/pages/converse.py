@@ -7,8 +7,9 @@ from antislapp import index
 
 class Converse():
     def decode_inbound(self, inbound):
+        data = json.loads(inbound)
         request = {
-            'msg': inbound['msg']
+            'msg': data['msg']
         }
         return request
 
@@ -29,7 +30,7 @@ class Converse():
         return self.POST()
 
     def POST(self):
-        inbound = web.input()
+        inbound = web.data()
         try:
             request = self.decode_inbound(inbound)
             response = self.process_request(request)

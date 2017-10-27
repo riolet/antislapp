@@ -70,7 +70,6 @@ p + p {
   flex: 1 50%;
 }
 .infoside p {
-  max-width: 450px;
   margin: auto;
 }
 .infoside h1 {
@@ -113,11 +112,14 @@ img, iframe {
   position: relative;
   top: -80px;
 }
-@media all and (min-width: 700px) {
-  .infoside { flex: 1 auto; }
+@media all and (min-width: 800px) {
+  .infoside { flex: 1 400px; }
   .chatside {
     flex: 2 auto;
     border-left: 2px solid rgba(0,0,0,0.05);
+  }
+  .infoside p {
+    max-width: 450px;
   }
 }
 /*
@@ -167,7 +169,7 @@ img, iframe {
   border: 1px solid rgba(0,0,0,0.1);
   width: 100%;
   height: 100%;
-  background: #EEE;
+  background: #F5F5F5;
   color: #666;
   font-size: 1.1em;
   padding: 0 1em;
