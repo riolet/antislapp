@@ -4,9 +4,11 @@ from antislapp.models import rtf
 from antislapp.models import defence
 
 template = """
+Defence Guide: Steps in your defence
+
 1. Bringing a claim: Complete
 
-You have been sued by someone and they started it by creating the statement of claim.
+This is the statement of claim that they brought against you. It means you have been sued and started this process.
 
 2. Defending a claim: In Progress
 
@@ -14,17 +16,17 @@ This is where we are right now. You've divided the allegations they made against
 
 We took the facts you'll need later and listed them out in a statement of defence.
 
-To do next: this statement needs to be proofread by you, filling in any missing information, and then printed out in a few copies.  You need to deliver a copy to everyone involved, including the court, the person suing you, and any other defendants.
+To do next: this statement needs to be proofread by you--filling in any missing information--and then printed out in a few copies.  You need to deliver a copy to everyone involved, including the court, the person suing you, and any other defendants.
 
 3. Discovery
 
 This is where you meet with the other team's lawyers and both of you show the other all the relevant documents you have, providing copies as needed. This is all your evidence like contracts, recordings, emails, etc. 
 
-Beyond documents, you also meet up and ask each other questions each other's documents
+This phase is also to determine exactly what the other person has to say, including anything they agree with you on and to try and get the other person to admit something that can be used against them later in trial.  There is no judge present for this, but a court reporter will be there.
 
 4. Setting an action for trial
 
-Either you or them can do this, it is notifying the court that the case is ready to be tried. It involves filing a trial record to all involved, and the court, and paying a court fee.
+This is when you notify the court that the case is ready to be tried. Either you, or them, can do this. It involves filing a trial record to all involved, and the court, and paying a court fee.
 
 5. Pre-trial conference
 

@@ -3,12 +3,14 @@ import random
 from antislapp import index
 from antislapp.models.defence import Defence
 from antislapp.models.form18a import Form18A
+from antislapp.models.suitsteps import SuitSteps
 from antislapp.models.definitions import definitions
 
 
 class Controller:
     def __init__(self, conversation_id, default_response):
         self.cid = conversation_id
+        self.domain = "https://riobot.centralus.cloudapp.azure.com"
         self.default = default_response
         self.defence = Defence(index.db, self.cid)
         self.response = {
@@ -132,8 +134,15 @@ class Controller:
         form.set_facts(fact_paragraphs)
         form.write()
 
-        report = report + "\n\n Download your statement of defence " \
-                          "[http://riobot.centralus.cloudapp.azure.com{}](here).".format(form.get_link())
+        report = report + "\n\nDownload your statement of defence " \
+                          "[{}{}](here).".format(self.domain, form.get_link())
+
+        # steps
+        steps = SuitSteps(self.cid)
+        steps.populate(self.defence)
+        steps.write()
+        report = report + "\n\nDownload your defence guide " \
+                          "[{}{}](here).".format(self.domain, steps.get_link())
 
         self.response['speech'] = report
         self.response['displayText'] = report
