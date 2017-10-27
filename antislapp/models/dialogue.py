@@ -9,7 +9,7 @@ from antislapp import index
 
 CLIENT_ACCESS_TOKEN = os.environ.get('CLIENT_ACCESS_TOKEN', None)
 if CLIENT_ACCESS_TOKEN is None:
-    web.ctx.env.get('CLIENT_ACCESS_TOKEN', 'No Access Token')
+    CLIENT_ACCESS_TOKEN = web.ctx.env.get('CLIENT_ACCESS_TOKEN', 'No Access Token')
 
 
 class Response:

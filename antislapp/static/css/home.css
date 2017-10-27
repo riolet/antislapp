@@ -154,8 +154,16 @@ img, iframe {
 }
 .chatmsgs .msg-ai {
   float: right;
-  background: #A5D175;
+  background: #85b54f;
   color: white;
+}
+.chatmsgs a {
+  text-decoration: none;
+  border-bottom: 2px solid white;
+  color: white;
+}
+.chatmsgs a:hover {
+  text-shadow: 0.07em 0.07em 0.25em rgba(0,0,0,0.75);
 }
 .chatbox .chatinput {
   clear: both;
