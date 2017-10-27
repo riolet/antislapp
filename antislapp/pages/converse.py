@@ -6,6 +6,9 @@ from antislapp import index
 
 
 class Converse():
+    def __init__(self):
+        pass
+
     def decode_inbound(self, inbound):
         data = json.loads(inbound)
         request = {
