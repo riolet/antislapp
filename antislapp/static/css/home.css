@@ -138,6 +138,7 @@ img, iframe {
 }
 .chatbox .chatmsgs div {
   display: inline-block;
+  white-space: pre-line;
   padding: 0.5em 1em;
   border-radius: 3px;
   margin: 0.75em;

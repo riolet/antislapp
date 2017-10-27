@@ -134,14 +134,14 @@ class Controller:
         form.set_facts(fact_paragraphs)
         form.write()
 
-        report = report + "\n\nDownload your statement of defence " \
+        report = report + "\n\nDownload your Statement of Defence " \
                           "[{}{}](here).".format(self.domain, form.get_link())
 
         # steps
         steps = SuitSteps(self.cid)
         steps.populate(self.defence)
         steps.write()
-        report = report + "\n\nDownload your defence guide " \
+        report = report + "\n\nDownload your Defence Guide " \
                           "[{}{}](here).".format(self.domain, steps.get_link())
 
         self.response['speech'] = report
