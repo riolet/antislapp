@@ -68,29 +68,23 @@ class Defence:
             self.db.delete(Defence.TABLE, where='conversation_id=$cid', vars={'cid': self.cid})
             self.db.insert(Defence.TABLE, conversation_id=self.cid, data=pickled_data, atime=now)
 
-    @property
-    def sued(self):
+    def get_sued(self):
         return self.data['sued']
 
-    @sued.setter
-    def sued(self, sued):
+    def set_sued(self, sued):
         self.data['sued'] = bool(sued)
 
-    @property
-    def defendant(self):
+    def get_defendant(self):
         return self.data['defendant']
 
-    @defendant.setter
-    def defendant(self, name):
+    def set_defendant(self, name):
         if len(name) > 0:
             self.data['defendant'] = name
 
-    @property
-    def plaintiff(self):
+    def get_plaintiff(self):
         return self.data['plaintiff']
 
-    @plaintiff.setter
-    def plaintiff(self, name):
+    def set_plaintiff(self, name):
         if len(name) > 0:
             self.data['plaintiff'] = name
 
@@ -178,9 +172,9 @@ class Defence:
         return None
 
     def report(self):
-        if self.sued is None:
+        if self.get_sued() is None:
             sued = "may have "
-        elif self.sued is True:
+        elif self.get_sued() is True:
             sued = "have "
         else:
             sued = "have not "

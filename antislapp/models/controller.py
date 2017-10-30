@@ -52,7 +52,7 @@ class Controller:
         next_question = self.defence.determine_next_question()
         # next_question has .acc_id, .acc, .qst OR is None
         if next_question is None:
-            if self.defence.plaintiff is None:
+            if self.defence.get_plaintiff() is None:
                 self.response['followupEvent'] = {'name': 'trigger-plaintiff', 'data': {}}
             else:
                 self.response['followupEvent'] = {'name': 'trigger-summary', 'data': {}}
@@ -107,10 +107,10 @@ class Controller:
         report = self.defence.report()
         form = Form18A(self.cid)
 
-        if self.defence.defendant is not None:
-            form.set_defendant(self.defence.defendant)
-        if self.defence.plaintiff is not None:
-            form.set_plaintiff(self.defence.plaintiff)
+        if self.defence.get_defendant() is not None:
+            form.set_defendant(self.defence.get_defendant())
+        if self.defence.get_plaintiff() is not None:
+            form.set_plaintiff(self.defence.get_plaintiff())
         form.set_unanswered([claim['accusation'] for claim in self.defence.get_withheld()])
         form.set_denials([claim['accusation'] for claim in self.defence.get_denied()])
         form.set_admissions([claim['accusation'] for claim in self.defence.get_agreed()])
