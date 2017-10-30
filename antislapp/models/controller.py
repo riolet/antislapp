@@ -45,10 +45,16 @@ class Controller:
         return joined
 
     def set_sued(self, sued):
-        self.defence.set_sued(sued)
+        self.defence.sued = sued
 
-    def add_accusation(self, accusation):
-        return self.defence.add_accusation(accusation)
+    def set_defendant(self, name):
+        self.defence.defendant = name
+
+    def set_plaintiff(self, name):
+        self.defence.plaintiff = name
+
+    def add_accusation(self, accusation, paragraph):
+        return self.defence.add_accusation(accusation, paragraph)
 
     def get_definition(self, term):
         dfn = definitions.get(term.lower(), "That term isn't in the dictionary")
@@ -59,7 +65,10 @@ class Controller:
         next_question = self.defence.determine_next_question()
         # next_question has .acc_id, .acc, .qst OR is None
         if next_question is None:
-            self.response['followupEvent'] = {'name': 'trigger-summary', 'data': {}}
+            if self.defence.plaintiff is None:
+                self.response['followupEvent'] = {'name': 'trigger-plaintiff', 'data': {}}
+            else:
+                self.response['followupEvent'] = {'name': 'trigger-summary', 'data': {}}
         else:
             self.response['contextOut'] = [{
                 'name': 'currentacc',
@@ -111,6 +120,10 @@ class Controller:
         report = self.defence.report()
         form = Form18A(self.cid)
 
+        if self.defence.defendant is not None:
+            form.set_defendant(self.defence.defendant)
+        if self.defence.plaintiff is not None:
+            form.set_plaintiff(self.defence.plaintiff)
         form.set_unanswered([claim['accusation'] for claim in self.defence.get_withheld()])
         form.set_denials([claim['accusation'] for claim in self.defence.get_denied()])
         form.set_admissions([claim['accusation'] for claim in self.defence.get_agreed()])

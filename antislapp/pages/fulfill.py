@@ -89,8 +89,12 @@ class Fulfill:
 
         if request['action'] == "is_sued":
             controller.set_sued(request['params']['sued'])
+        elif request['action'] == 'get_name':
+            controller.set_defendant(request['params']['name'])
+        elif request['action'] == 'get_plaintiff':
+            controller.set_plaintiff(request['params']['name'])
         elif request['action'] == 'get_accusations':
-            controller.add_accusation(request['params']['reason'])
+            controller.add_accusation(request['params']['reason'], request['params']['paragraph'])
         elif request['action'] == 'plead':
             controller.make_plea(request['contexts']['currentacc'], request['params'])
         elif request['action'] == 'done_accusations':

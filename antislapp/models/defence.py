@@ -55,6 +55,8 @@ class Defence:
     def reset(self):
         self.data = {
             'sued': None,
+            'defendant': None,
+            'plaintiff': None,
             'claims': []
         }
 
@@ -65,12 +67,36 @@ class Defence:
             self.db.delete(Defence.TABLE, where='conversation_id=$cid', vars={'cid': self.cid})
             self.db.insert(Defence.TABLE, conversation_id=self.cid, data=pickled_data, atime=now)
 
-    def set_sued(self, sued):
+    @property
+    def sued(self):
+        return self.data['sued']
+
+    @sued.setter
+    def sued(self, sued):
         self.data['sued'] = bool(sued)
 
-    def add_accusation(self, accusation):
+    @property
+    def defendant(self):
+        return self.data['defendant']
+
+    @defendant.setter
+    def defendant(self, name):
+        if len(name) > 0:
+            self.data['defendant'] = name
+
+    @property
+    def plaintiff(self):
+        return self.data['plaintiff']
+
+    @plaintiff.setter
+    def plaintiff(self, name):
+        if len(name) > 0:
+            self.data['plaintiff'] = name
+
+    def add_accusation(self, accusation, paragraph):
         self.data['claims'].append({
-            'accusation': accusation
+            'accusation': accusation,
+            'paragraph': paragraph
         })
 
         return len(self.data['claims']) - 1
@@ -151,16 +177,16 @@ class Defence:
         return None
 
     def report(self):
-        if self.data.get('sued') is None:
+        if self.sued is None:
             sued = "may have "
-        elif self.data.get('sued') is True:
+        elif self.sued is True:
             sued = "have "
         else:
             sued = "have not "
 
-        agrees = "\", \"".join(claim['accusation'] for claim in self.get_agreed())
-        withholds = "\", \"".join(claim['accusation'] for claim in self.get_withheld())
-        denies = "\", \"".join(claim['accusation'] for claim in self.get_denied())
+        agrees = "\", \"".join(claim['paragraph'] for claim in self.get_agreed())
+        withholds = "\", \"".join(claim['paragraph'] for claim in self.get_withheld())
+        denies = "\", \"".join(claim['paragraph'] for claim in self.get_denied())
         p_agree = "You agree with the claims of \"{}\". ".format(agrees)
         p_withhold = "You cannot respond to claims of \"{}\". ".format(withholds)
         p_deny = "You deny the allegations of \"{}\". ".format(denies)
