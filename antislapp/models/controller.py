@@ -31,13 +31,13 @@ class Controller:
         }
 
     def set_sued(self, sued):
-        self.defence.sued = sued
+        self.defence.set_sued(sued)
 
     def set_defendant(self, name):
-        self.defence.defendant = name
+        self.defence.set_defendant(name)
 
     def set_plaintiff(self, name):
-        self.defence.plaintiff = name
+        self.defence.set_plaintiff(name)
         self.done_accusations()
 
     def add_accusation(self, accusation, paragraph):
