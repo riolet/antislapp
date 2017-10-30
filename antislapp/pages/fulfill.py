@@ -13,7 +13,8 @@ class Fulfill:
     def __init__(self):
         pass
 
-    def dump_error(self, inbound, request, outbound):
+    @staticmethod
+    def dump_error(inbound, request, outbound):
         with file(Fulfill.outfile, 'w') as f:
             f.write("\n==== error ====\n")
             er = traceback.format_exc()
@@ -99,7 +100,8 @@ class Fulfill:
             controller.make_plea(request['contexts']['currentacc'], request['params'])
         elif request['action'] == 'done_accusations':
             controller.done_accusations()
-        elif request['action'] in ('check-truth', 'check-absolute', 'check-qualified', 'check-fair', 'check-responsible'):
+        elif request['action'] in ('check-truth', 'check-absolute', 'check-qualified', 'check-fair',
+                                   'check-responsible'):
             controller.defence_check(request['contexts']['currentacc'], request['params'])
         elif request['action'] == 'evidence':
             controller.add_fact(request['contexts']['currentacc'], request['params']['fact'])

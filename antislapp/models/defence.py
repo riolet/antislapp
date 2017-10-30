@@ -2,6 +2,7 @@ import time
 import traceback
 import cPickle
 import web
+from antislapp import index
 
 # data looks like:
 # data:
@@ -183,13 +184,12 @@ class Defence:
             sued = "have "
         else:
             sued = "have not "
-
-        agrees = "\", \"".join(claim['paragraph'] for claim in self.get_agreed())
-        withholds = "\", \"".join(claim['paragraph'] for claim in self.get_withheld())
-        denies = "\", \"".join(claim['paragraph'] for claim in self.get_denied())
-        p_agree = "You agree with the claims of \"{}\". ".format(agrees)
-        p_withhold = "You cannot respond to claims of \"{}\". ".format(withholds)
-        p_deny = "You deny the allegations of \"{}\". ".format(denies)
+        agrees = index.join_list(claim['paragraph'] for claim in self.get_agreed())
+        withholds = index.join_list(claim['paragraph'] for claim in self.get_withheld())
+        denies = index.join_list(claim['paragraph'] for claim in self.get_denied())
+        p_agree = "You agree with the claims in paragraphs {}. ".format(agrees)
+        p_withhold = "You cannot respond to claims in paragraphs {}. ".format(withholds)
+        p_deny = "You deny the allegations in paragraphs {}. ".format(denies)
 
         summary = "In summary, you {sued}been sued. ".format(sued=sued)
         if agrees:
@@ -199,4 +199,3 @@ class Defence:
         if withholds:
             summary += p_withhold
         return summary.strip()
-

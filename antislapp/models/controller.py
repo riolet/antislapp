@@ -1,5 +1,4 @@
 import re
-import random
 from antislapp import index
 from antislapp.models.defence import Defence
 from antislapp.models.form18a import Form18A
@@ -31,19 +30,6 @@ class Controller:
             'Responsible Communication': 'trigger-responsible'
         }
 
-    @staticmethod
-    def join_list(items):
-        count = len(items)
-        if count == 0:
-            joined = ''
-        elif count == 1:
-            joined = items[0]
-        elif count == 2:
-            joined = "{} and {}".format(*items)
-        else:
-            joined = "{}, and {}".format(", ".join(items[:-1]), items[-1])
-        return joined
-
     def set_sued(self, sued):
         self.defence.sued = sued
 
@@ -52,6 +38,7 @@ class Controller:
 
     def set_plaintiff(self, name):
         self.defence.plaintiff = name
+        self.done_accusations()
 
     def add_accusation(self, accusation, paragraph):
         return self.defence.add_accusation(accusation, paragraph)

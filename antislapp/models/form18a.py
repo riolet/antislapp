@@ -77,20 +77,21 @@ class Form18A:
         # 4+. consecutive numbered paragraphs detailing the relevant facts to be used.
         #
         if self.admissions:
-            p_agree = "The defendant admits the allegations of \"{}\" contained in "\
-                      "the statement of claim.".format('", "'.join(self.admissions))
+            p_agree = "The defendant admits the allegations contained in paragraph{} {} of the statement of claim."\
+                .format('s' if len(self.admissions) > 1 else '', index.join_list(self.admissions))
         else:
             p_agree = "The defendant admits none of the allegations in the statement of claim."
 
         if self.denials:
-            p_deny = "The defendant denies the allegations of \"{}\" contained in "\
-                     "the statement of claim.".format('", "'.join(self.denials))
+            p_deny = "The defendant denies the allegations contained in paragraph{} {} of the statement of claim."\
+                .format('s' if len(self.denials) > 1 else '', index.join_list(self.denials))
         else:
             p_deny = "The defendant denies none of the allegations in the statement of claim."
 
         if self.unanswered:
-            p_withheld = 'The defendant has no knowledge in respect of the allegations of \"{}\" contained '\
-                         'in the statement of claim.'.format(', '.join(self.unanswered))
+            p_withheld = 'The defendant has no knowledge in respect of the allegations contained in paragraph{} {} of' \
+                         ' the statement of claim.'\
+                .format('s' if len(self.unanswered) > 1 else '', index.join_list(self.unanswered))
         else:
             p_withheld = 'There are no paragraphs in the statement of claim that the defendant cannot answer.'
 

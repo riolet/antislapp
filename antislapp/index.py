@@ -33,6 +33,19 @@ def parse_sql_file(path, replacements):
     return parse_sql_string(sql, replacements)
 
 
+def join_list(items):
+    count = len(items)
+    if count == 0:
+        joined = ''
+    elif count == 1:
+        joined = items[0]
+    elif count == 2:
+        joined = "{} and {}".format(*items)
+    else:
+        joined = "{}, and {}".format(", ".join(items[:-1]), items[-1])
+    return joined
+
+
 urls = ("/fulfill", "pages.fulfill.Fulfill",
         "/converse", "pages.converse.Converse",
 #        "/debug", "pages.debug.Debug",
