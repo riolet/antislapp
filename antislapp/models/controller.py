@@ -111,9 +111,9 @@ class Controller:
             form.set_defendant(self.defence.get_defendant())
         if self.defence.get_plaintiff() is not None:
             form.set_plaintiff(self.defence.get_plaintiff())
-        form.set_unanswered([claim['accusation'] for claim in self.defence.get_withheld()])
-        form.set_denials([claim['accusation'] for claim in self.defence.get_denied()])
-        form.set_admissions([claim['accusation'] for claim in self.defence.get_agreed()])
+        form.set_unanswered(self.defence.get_withheld())
+        form.set_denials(self.defence.get_denied())
+        form.set_admissions(self.defence.get_agreed())
 
         fact_paragraphs = []
         claims = self.defence.get_claims()
@@ -125,11 +125,11 @@ class Controller:
                 if defence in claim and claim[defence]['valid']:
                     facts = claim[defence].get('facts', [])
                     for fact in facts:
-                        allegation = claim['accusation']
+                        p_number = claim['paragraph']
                         fact = re.sub(r'\bme\b', 'the defendant', fact)
                         fact = re.sub(r"\b[Ii]('m|\sam)\b", 'the defendant is', fact)
                         fact = re.sub(r'\b[Ii]\b', 'the defendant', fact)
-                        p = 'With respect to allegations of "{}", the defendant claims {}'.format(allegation, fact)
+                        p = 'With respect to allegations in paragraph {}, the defendant claims {}'.format(p_number, fact)
                         fact_paragraphs.append(p)
         form.set_facts(fact_paragraphs)
         form.write()
