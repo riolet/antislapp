@@ -30,15 +30,14 @@ class Controller:
             'Responsible Communication': 'trigger-responsible'
         }
 
-    def set_sued(self, sued):
+    def set_sued(self, sued, plaintiff):
         self.defence.set_sued(sued)
+        if plaintiff is not None:
+            self.defence.set_plaintiff(plaintiff)
+
 
     def set_defendant(self, name):
         self.defence.set_defendant(name)
-
-    def set_plaintiff(self, name):
-        self.defence.set_plaintiff(name)
-        self.done_accusations()
 
     def add_accusation(self, accusation, paragraph):
         return self.defence.add_accusation(accusation, paragraph)
@@ -52,10 +51,7 @@ class Controller:
         next_question = self.defence.determine_next_question()
         # next_question has .acc_id, .acc, .qst OR is None
         if next_question is None:
-            if self.defence.get_plaintiff() is None:
-                self.response['followupEvent'] = {'name': 'trigger-plaintiff', 'data': {}}
-            else:
-                self.response['followupEvent'] = {'name': 'trigger-summary', 'data': {}}
+            self.response['followupEvent'] = {'name': 'trigger-summary', 'data': {}}
         else:
             self.response['contextOut'] = [{
                 'name': 'currentacc',
