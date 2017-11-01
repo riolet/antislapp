@@ -63,7 +63,7 @@ class Controller:
                 'parameters': params
             }]
             self.response['followupEvent'] = {
-                'name': self.defence_triggers[next_step['next']],
+                'name': self.defence_triggers[next_step['next_step']],
                 'data': next_step['data']
             }
         self.response.pop('speech', None)  # required to be absent

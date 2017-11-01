@@ -117,7 +117,7 @@ class Fulfill:
             controller.done_facts(request['contexts']['currentacc'])
         elif action == 'ask_boolean_question':
             # get the question from defence
-            controller.set_next_step()
+            raise NotImplementedError
         elif action == 'ask_boolean_answer':
             # save the answer, trigger next question or state.
             controller.boolean_answer(request['contexts']['currentacc'], request['params']['answer'])
