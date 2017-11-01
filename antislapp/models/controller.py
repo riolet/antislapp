@@ -64,7 +64,7 @@ class Controller:
             }]
             self.response['followupEvent'] = {
                 'name': self.defence_triggers[next_step['next_step']],
-                'data': next_step['data']
+                'data': next_step.get('data', {})
             }
         self.response.pop('speech', None)  # required to be absent
         self.response.pop('displayText', None)  # required to be absent
