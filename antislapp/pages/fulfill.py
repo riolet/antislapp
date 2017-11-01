@@ -94,7 +94,7 @@ class Fulfill:
         elif action == 'get_name':
             controller.set_defendant(request['params']['name'])
         elif action == 'get_allegations':
-            controller.add_allegation(request['params']['reason'], request['params']['paragraph'])
+            controller.add_allegation(request['params']['allegation'], request['params']['paragraph'])
         elif action == 'plead':
             controller.make_plea(request['contexts']['currentacc'], request['params'])
         elif action == 'done_allegations':

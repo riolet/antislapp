@@ -126,7 +126,7 @@ class Controller:
                 continue
 
             for defence in Defence.DEFENCES:
-                if defence in claim and claim[defence]['valid']:
+                if defence in claim and claim[defence].applicable:
                     facts = claim[defence].get('facts', [])
                     for fact in facts:
                         p_number = claim['paragraph']
