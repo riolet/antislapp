@@ -80,24 +80,21 @@ class Controller:
 
     def defence_check(self, context, params):
         cid = int(float(context['parameters']['claim_id']))
-        self.defence.add_defence(cid, context['parameters']['defence'], params['applicable'])
+        defence = context['parameters']['defence']
+        self.defence.add_defence(cid, defence, params['applicable'])
         self.set_next_step()
 
     def done_facts(self, context):
         cid = int(float(context['parameters']['claim_id']))
-        # TODO: this should break.
-        self.defence.done_facts(cid, context['parameters']['defence'])
+        defence = context['parameters']['defence']
+        self.defence.done_facts(cid, defence)
         self.set_next_step()
 
     def add_fact(self, context, fact):
         cid = int(float(context['parameters']['claim_id']))
-        defence = context['parameters']['next_step']
+        defence = context['parameters']['defence']
         self.defence.add_fact(cid, defence, fact)
-        self.response['contextOut'] = [{
-            'name': 'currentacc',
-            'lifespan': 20,
-            'parameters': context['parameters']
-        }]
+        self.set_next_step()
 
     def boolean_answer(self, context, answer):
         cid = int(float(context['parameters']['claim_id']))

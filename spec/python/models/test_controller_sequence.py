@@ -177,3 +177,31 @@ def test_everything():
     assert response['contextOut'] == [{'lifespan': 20,
                                        'name': 'currentacc',
                                        'parameters': {'allegation': 'issue C', 'claim_id': claim_id3, 'defence': 'Truth'}}]
+
+    # AI: What are the facts that would support the Truth defence? Just the facts here, not any specific evidence at this point. Please list them out one at a time.
+    # me: Fact 1
+    c = controller.Controller(conversation, def_response)
+    context = {u'lifespan': 19,
+               u'name': u'currentacc',
+               u'parameters': {u'allegation': u'issue C',
+                               u'applicable': u'true',
+                               u'applicable.original': u'',
+                               u'claim_id': float(claim_id3),
+                               u'defence': u'Truth',
+                               u'fact': u'fact 1',
+                               u'fact.original': u'fact 1',
+                               u'plead': u'deny',
+                               u'plead.original': u''}}
+    fact = u'fact 1'
+    c.add_fact(context, fact)
+    c.save()
+    response = c.get_response()
+    del c
+    del context
+    del fact
+    assert set(response.keys()) == {'source', 'followupEvent', 'contextOut'}
+    assert response['followupEvent'] == {'data': {}, 'name': 'trigger-facts'}
+    assert response['contextOut'] == [{'lifespan': 20,
+                                       'name': 'currentacc',
+                                       'parameters': {'allegation': 'issue C', 'claim_id': claim_id3,
+                                                      'defence': 'Truth'}}]

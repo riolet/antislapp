@@ -305,7 +305,6 @@ class Defence:
         """
         print("---- restarting get_next_step ----")
         for claim_id, claim in enumerate(self.data['claims']):
-            print("claim_id {}, claim {}".format(claim_id, claim['allegation']))
             # Every claim needs to be pleaded one way or another.
             if claim['plead'] is None:
                 next_step = {
