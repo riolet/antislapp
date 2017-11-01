@@ -24,6 +24,7 @@ class Controller:
         self.defence_triggers = {
             'plead': 'trigger-plead',
             'question': 'trigger-bool',
+            'facts': 'trigger-facts',
             'Truth': 'trigger-truth',
             'Absolute Privilege': 'trigger-absolute',
             'Qualified Privilege': 'trigger-qualified',
@@ -57,6 +58,8 @@ class Controller:
                 'claim_id': next_step['claim_id'],
                 'allegation': next_step['allegation']
             }
+            if 'defence' in next_step:
+                params['defence'] = next_step['defence']
             self.response['contextOut'] = [{
                 'name': 'currentacc',
                 'lifespan': 20,
@@ -77,8 +80,7 @@ class Controller:
 
     def defence_check(self, context, params):
         cid = int(float(context['parameters']['claim_id']))
-        complete = False if context['parameters']['next_step'] == 'Responsible Communication' else True
-        self.defence.add_defence(cid, context['parameters']['next_step'], params['applicable'])
+        self.defence.add_defence(cid, context['parameters']['defence'], params['applicable'])
         self.set_next_step()
 
     def done_facts(self, context):

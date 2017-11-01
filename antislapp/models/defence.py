@@ -58,7 +58,6 @@ class BaseDefence:
         elif self.applicable is True and self.facts_done is not True:
             next_step = {
                 'next_step': 'facts',
-                'data': {'defence': self.name}
             }
         return next_step
 
@@ -301,6 +300,7 @@ class Defence:
             claim_id: \d
             allegation: ""
             next_step: ""
+            defence: ""  # optional
             data: {}  # optional
         """
         print("---- restarting get_next_step ----")
@@ -328,6 +328,7 @@ class Defence:
                         'claim_id': claim_id,
                         'allegation': claim['allegation'],
                         'next_step': defence,
+                        'defence': defence,
                     }
                     return next_step
 
@@ -345,6 +346,7 @@ class Defence:
                     'claim_id': claim_id,
                     'allegation': claim['allegation'],
                     'next_step': def_ns['next_step'],
+                    'defence': defence,
                     'data': def_ns.get('data', {}),
                 }
                 return next_step

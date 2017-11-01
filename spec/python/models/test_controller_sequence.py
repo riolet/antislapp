@@ -150,6 +150,30 @@ def test_everything():
     assert response['followupEvent'] == {'data': {}, 'name': 'trigger-truth'}
     assert response['contextOut'] == [{'lifespan': 20,
                                        'name': 'currentacc',
-                                       'parameters': {'allegation': 'issue C', 'claim_id': claim_id3}}]
+                                       'parameters': {'allegation': 'issue C', 'claim_id': claim_id3, 'defence': 'Truth'}}]
 
-    
+    # AI: Regarding the accusation of "issue A," can you use the Truth defence? This applies if you have facts to support what you said or wrote.
+    # me: Yes
+    c = controller.Controller(conversation, def_response)
+    context = {u'lifespan': 19,
+               u'name': u'currentacc',
+               u'parameters': {u'allegation': u'issue C',
+                               u'applicable': u'true',
+                               u'applicable.original': u'',
+                               u'claim_id': float(claim_id3),
+                               u'plead': u'deny',
+                               u'plead.original': u'',
+                               u'defence': u'Truth'}
+    }
+    params = {u'applicable': True}
+    c.defence_check(context, params)
+    c.save()
+    response = c.get_response()
+    del c
+    del context
+    del params
+    assert set(response.keys()) == {'source', 'followupEvent', 'contextOut'}
+    assert response['followupEvent'] == {'data': {}, 'name': 'trigger-facts'}
+    assert response['contextOut'] == [{'lifespan': 20,
+                                       'name': 'currentacc',
+                                       'parameters': {'allegation': 'issue C', 'claim_id': claim_id3, 'defence': 'Truth'}}]

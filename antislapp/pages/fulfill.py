@@ -102,8 +102,7 @@ class Fulfill:
             controller.make_plea(request['contexts']['currentacc'], request['params'])
         elif action == 'done_allegations':
             controller.set_next_step()
-        elif action in ('check-truth', 'check-absolute', 'check-qualified', 'check-fair',
-                                   'check-responsible'):
+        elif action in ('check-truth', 'check-absolute', 'check-qualified', 'check-fair', 'check-responsible'):
             controller.defence_check(request['contexts']['currentacc'], request['params'])
         elif action == 'evidence':
             controller.add_fact(request['contexts']['currentacc'], request['params']['fact'])
