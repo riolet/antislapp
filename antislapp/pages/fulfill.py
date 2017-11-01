@@ -87,28 +87,36 @@ class Fulfill:
     def process_request(self, request):
         # defence = Defence(request['db'], request['conversation_id'])
         controller = Controller(request['conversation_id'], request['default'])
+        action = request['action']
 
-        if request['action'] == "is_sued":
+        if action == "is_sued":
             controller.set_sued(request['params']['sued'], request['params'].get('name', None))
-        elif request['action'] == 'get_name':
+        elif action == 'get_name':
             controller.set_defendant(request['params']['name'])
-        elif request['action'] == 'get_accusations':
-            controller.add_accusation(request['params']['reason'], request['params']['paragraph'])
-        elif request['action'] == 'plead':
+        elif action == 'get_allegations':
+            controller.add_allegation(request['params']['reason'], request['params']['paragraph'])
+        elif action == 'plead':
             controller.make_plea(request['contexts']['currentacc'], request['params'])
-        elif request['action'] == 'done_accusations':
-            controller.done_accusations()
-        elif request['action'] in ('check-truth', 'check-absolute', 'check-qualified', 'check-fair',
+        elif action == 'done_allegations':
+            controller.set_next_step()
+        elif action in ('check-truth', 'check-absolute', 'check-qualified', 'check-fair',
                                    'check-responsible'):
             controller.defence_check(request['contexts']['currentacc'], request['params'])
-        elif request['action'] == 'evidence':
+        elif action == 'evidence':
             controller.add_fact(request['contexts']['currentacc'], request['params']['fact'])
-        elif request['action'] == 'report':
+        elif action == 'report':
             controller.report()
-        elif request['action'] == 'clear_all':
+        elif action == 'clear_all':
             controller.reset()
-        elif request['action'] == 'definition':
+        elif action == 'definition':
             controller.get_definition(request['params']['definition_terms'])
+        elif action == 'ask_boolean_question':
+            # get the question from defence
+            controller.set_next_step()
+        elif action == 'ask_boolean_answer':
+            # save the answer, trigger next question or state.
+            controller.boolean_answer(request['contexts']['currentacc'], request['params']['answer'])
+            controller.set_next_step()
         else:
             pass
 

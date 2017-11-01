@@ -23,44 +23,143 @@ class Controller:
         }
         self.defence_triggers = {
             'plead': 'trigger-plead',
+            'question': 'trigger-bool',
             'Truth': 'trigger-truth',
             'Absolute Privilege': 'trigger-absolute',
             'Qualified Privilege': 'trigger-qualified',
             'Fair Comment': 'trigger-fair',
-            'Responsible Communication': 'trigger-responsible'
+            'Responsible Communication': 'trigger-responsible',
         }
+
+    def is_claim_complete(self, claim):
+        """
+        Check if a claim is completely examined. True if no more questions to ask.
+        """
+        complete = True
+        if 'plead' not in claim or claim['plead'] == 'deny':
+            complete = False
+        for defence in Defence.DEFENCES:
+            if defence not in claim:
+                complete = False
+                break
+            if not claim[defence].get('complete', False):
+                complete = False
+                break
+        return complete
+
+    def next_defence_step(self, defence, defence_value):
+        """
+        Check if a defence is done being examined
+        return None or a dict with keys:
+            'step': either 'plead', the name of a defence, or 'question'
+            'data': optional--only include when 'step' == 'question'
+        """
+        if defence_value is None:
+            step = {
+                'step': defence
+            }
+            return step
+
+        if defence_value['complete'] is True:
+            return None
+
+        # do something special based on defence steps??
+        if defence == 'Responsible Communication':
+            step = {
+                'step': 'question',
+                'data': {'question': 'This is a special test follow-up question for responsible communication. Are you a human?'}
+            }
+            return step
+
+        defence_value['complete'] = True
+        return None
+
+    def determine_next_step(self):
+        """
+        iterate through claims
+        for each claim:
+            if the claim has no plead:
+                ask plead
+            if the plead is deny:
+                for each defence:
+                    if the defence not fully examined:
+                        ask defence
+        """
+
+        # determine which claim we should be looking at
+        claims = self.defence.get_claims()
+        claim_id = -1
+        claim = None
+        for i, clm in enumerate(claims):
+            if not self.is_claim_complete(clm):
+                claim_id = i
+                claim = clm
+                break
+
+        if claim_id == -1:
+            return None
+
+        # have they pleaded for this claim?
+        if 'plead' not in claim:
+            next_step = {
+                'claim_id': claim_id,
+                'allegation': claim['allegation'],
+                'next_step': 'plead'
+            }
+            return next_step
+
+        # determine which defence we should be looking at
+        next_defence_step = None
+        for defence in Defence.DEFENCES:
+            defence_value = claim.get(defence)
+            next_defence_step = self.next_defence_step(defence, defence_value)
+            if next_defence_step is not None:
+                break
+
+        assert next_defence_step is not None
+
+        next_step = {
+            'claim_id': claim_id,
+            'allegation': claim['allegation'],
+            'next_step': next_defence_step['step'],
+            'data': next_defence_step['data'],
+        }
+        return next_step
 
     def set_sued(self, sued, plaintiff):
         self.defence.set_sued(sued)
         if plaintiff is not None:
             self.defence.set_plaintiff(plaintiff)
 
-
     def set_defendant(self, name):
         self.defence.set_defendant(name)
 
-    def add_accusation(self, accusation, paragraph):
-        return self.defence.add_accusation(accusation, paragraph)
+    def add_allegation(self, allegation, paragraph):
+        return self.defence.add_allegation(allegation, paragraph)
 
     def get_definition(self, term):
         dfn = definitions.get(term.lower(), "That term isn't in the dictionary")
         self.response['speech'] = dfn
         self.response['displayText'] = dfn
 
-    def done_accusations(self):
-        next_question = self.defence.determine_next_question()
+    def set_next_step(self):
+        next_step = self.determine_next_step()
         # next_question has .acc_id, .acc, .qst OR is None
-        if next_question is None:
+        if next_step is None:
             self.response['followupEvent'] = {'name': 'trigger-summary', 'data': {}}
         else:
+            params = {
+                'claim_id': next_step['claim_id'],
+                'allegation': next_step['allegation']
+            }
             self.response['contextOut'] = [{
                 'name': 'currentacc',
                 'lifespan': 20,
-                'parameters': next_question
+                'parameters': params
             }]
             self.response['followupEvent'] = {
-                'name': self.defence_triggers[next_question['qst']],
-                'data': {}
+                'name': self.defence_triggers[next_step['next']],
+                'data': next_step['data']
             }
         self.response.pop('speech', None)  # required to be absent
         self.response.pop('displayText', None)  # required to be absent
@@ -69,11 +168,12 @@ class Controller:
         cid = int(float(context['parameters']['acc_id']))
         # plead may be one of Defence.PLEADS ('agree', 'withhold', 'deny')
         self.defence.plead(cid, params['plead'])
-        self.done_accusations()
+        self.set_next_step()
 
     def defence_check(self, context, params):
         cid = int(float(context['parameters']['acc_id']))
-        self.defence.add_defence(cid, context['parameters']['qst'], params['valid'])
+        complete = False if context['parameters']['next_step'] == 'Responsible Communication' else True
+        self.defence.add_defence(cid, context['parameters']['next_step'], params['valid'], complete)
         if params['valid']:
             self.response['contextOut'] = [{
                 'name': 'currentacc',
@@ -87,7 +187,9 @@ class Controller:
             self.response.pop('speech', None)  # required to be absent
             self.response.pop('displayText', None)  # required to be absent
         else:
-            self.done_accusations()
+            self.set_next_step()
+
+    def
 
     def add_fact(self, context, fact):
         cid = int(float(context['parameters']['acc_id']))

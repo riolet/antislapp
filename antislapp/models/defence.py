@@ -8,7 +8,7 @@ from antislapp import index
 # data:
 #   sued = True/False
 #   claims = [
-#       {accusation: blah blah X
+#       {allegation: blah blah X
 #       plead: agree/deny/withhold
 #       Truth:
 #           valid: true/false
@@ -18,11 +18,99 @@ from antislapp import index
 #           facts: [...]
 #       ...
 #       },
-#       {accusation: blah blah Y
+#       {allegation: blah blah Y
 #        ...
 #       },
-#       {accusation: blah blah Z
+#       {allegation: blah blah Z
 #       ...}
+
+
+class BaseDefence:
+    def __init__(self, name, state):
+        self.name = name
+        self.applicable = None
+        self.facts_done = False
+        self.facts = []
+        self.import_state(state)
+
+    def import_state(self, data):
+        self.applicable = data['applicable']
+        self.facts_done = data['facts_done']
+        self.facts = data['facts']
+
+    def export_state(self):
+        data = {
+            'applicable': self.applicable,
+            'facts_done': self.facts_done,
+            'facts': [str(fact) for fact in self.facts]
+        }
+        return data
+
+    def next_step(self):
+        next_step = None
+        if self.applicable is None:
+            next_step = {
+                'step': self.name
+            }
+        elif self.facts_done is not True:
+            next_step = {
+                'step': 'facts',
+                'data': {'defence': self.name}
+            }
+        return next_step
+
+
+class TruthDefence(BaseDefence):
+    def __init__(self, state):
+        BaseDefence.__init__(self, 'Truth', state)
+
+
+class AbsoluteDefence(BaseDefence):
+    def __init__(self, state):
+        BaseDefence.__init__(self, 'Absolute Privilege', state)
+
+
+class QualifiedDefence(BaseDefence):
+    def __init__(self, state):
+        BaseDefence.__init__(self, 'Qualified Privilege', state)
+
+
+class FairCommentDefence(BaseDefence):
+    def __init__(self, state):
+        BaseDefence.__init__(self, 'Fair Comment', state)
+
+
+class ResponsibleDefence(BaseDefence):
+    def __init__(self, state):
+        BaseDefence.__init__(self, 'Responsible Communication', state)
+        self.special_question = None
+
+    def import_state(self, data):
+        BaseDefence.import_state(self, data)
+        self.special_question = data['special']
+
+    def export_state(self):
+        data = BaseDefence.export_state(self)
+        data['special'] = self.special_question
+        return data
+
+    def next_step(self):
+        next_step = None
+        if self.applicable is None:
+            next_step = {
+                'step': self.name
+            }
+        elif self.special_question is None:
+            next_step = {
+                'step': 'question',
+                'data': {'question': 'This is a special test follow-up question for responsible communication. Are you a human?'}
+            }
+        elif self.facts_done is not True:
+            next_step = {
+                'step': 'facts',
+                'data': {'defence': self.name}
+            }
+        return next_step
 
 
 class Defence:
@@ -88,9 +176,9 @@ class Defence:
         if len(name) > 0:
             self.data['plaintiff'] = name
 
-    def add_accusation(self, accusation, paragraph):
+    def add_allegation(self, allegation, paragraph):
         self.data['claims'].append({
-            'accusation': accusation,
+            'allegation': allegation,
             'paragraph': paragraph
         })
 
@@ -99,28 +187,38 @@ class Defence:
     def get_claims(self):
         return self.data.get('claims', [])
 
-    def plead(self, accusation_id, plead):
-        # Raises IndexError if accusation_id is missing.
+    def plead(self, claim_id, plead):
+        # Raises IndexError if claim_id is missing.
         # Raises ValueError if plead isn't one of Defence.PLEADS.
-        context = self.data['claims'][accusation_id]
+        context = self.data['claims'][claim_id]
         if plead not in Defence.PLEADS:
             raise ValueError("Plead must be one of {}".format(Defence.PLEADS))
         context['plead'] = plead
 
-    def add_defence(self, accusation_id, defence, valid):
-        # Raises IndexError if accusation_id is missing.
+    def add_defence(self, claim_id, defence, valid, complete):
+        # Raises IndexError if claim_id is missing.
         # Raises ValueError if defence isn't one of Defence.DEFENCES
         # Casts valid to bool.
-        context = self.data['claims'][accusation_id]
+        context = self.data['claims'][claim_id]
         if defence not in Defence.DEFENCES:
             raise ValueError("Defence must be one of {}".format(Defence.DEFENCES))
         context[defence] = {}
         context[defence]['valid'] = bool(valid)
+        context[defence]['complete'] = complete
 
-    def add_fact(self, accusation_id, defence, facts):
-        # Raises IndexError on missing accusation_id
+    def get_defence(self, claim_id, defence):
+        context = self.data['claims'][claim_id]
+        return context.get(defence, None)
+
+    def update_defence(self, claim_id, defence, key, value):
+        context = self.data['claims'][claim_id]
+        defence = context[defence]
+        defence[key] = value
+
+    def add_fact(self, claim_id, defence, facts):
+        # Raises IndexError on missing claim_id
         # Raises ValueError if defence has not been pleaded.
-        context = self.data['claims'][accusation_id]
+        context = self.data['claims'][claim_id]
         if defence not in context:
             raise ValueError
         if 'facts' in context[defence]:
@@ -148,28 +246,6 @@ class Defence:
             if claim.get('plead', 'withhold') == 'deny':
                 denied.append(claim)
         return denied
-
-    def determine_next_question(self):
-        for i, claim in enumerate(self.data['claims']):
-            if 'plead' not in claim:
-                question = {
-                    'acc_id': i,
-                    'acc': claim['accusation'],
-                    'qst': 'plead'
-                }
-                return question
-            elif claim['plead'] in ['withhold', 'agree']:
-                continue
-            else:
-                for d in Defence.DEFENCES:
-                    if d not in claim:
-                        question = {
-                            'acc_id': i,
-                            'acc': claim['accusation'],
-                            'qst': d
-                        }
-                        return question
-        return None
 
     def report(self):
         if self.get_sued() is None:
