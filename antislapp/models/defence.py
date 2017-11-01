@@ -168,10 +168,6 @@ class Defence:
 
         try:
             data = cPickle.loads(str(row['data']))
-            print("--- loading ---")
-            import pprint
-            pprint.pprint(data)
-            print("--- loading complete ---")
             for claim in data['claims']:
                 for Def_name, Def_state in claim.iteritems():
                     if Def_name in Defence.DEFENCES:
@@ -195,10 +191,6 @@ class Defence:
                     claim[k] = v
             claims.append(claim)
         data['claims'] = claims
-        print("--- dumping ---")
-        import pprint
-        pprint.pprint(data)
-        print("--- dumping complete ---")
         pickled_data = cPickle.dumps(data)
         now = int(time.time())
 
@@ -311,7 +303,9 @@ class Defence:
             next_step: ""
             data: {}  # optional
         """
+        print("---- restarting get_next_step ----")
         for claim_id, claim in enumerate(self.data['claims']):
+            print("claim_id {}, claim {}".format(claim_id, claim['allegation']))
             # Every claim needs to be pleaded one way or another.
             if claim['plead'] is None:
                 next_step = {
@@ -320,13 +314,12 @@ class Defence:
                     'next_step': 'plead',
                 }
                 return next_step
-
             # Only claims that are denied have followup questions
-            if claim['plead'] is not 'deny':
+            if claim['plead'] != 'deny':
                 continue
-
             # Inquire about each possible defence.
             for defence in Defence.DEFENCES:
+                print("  Defence {}:".format(defence))
                 d = claim.get(defence, None)
 
                 # This defence hasn't been brought up yet.
