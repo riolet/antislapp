@@ -110,13 +110,14 @@ class Fulfill:
             controller.reset()
         elif action == 'definition':
             controller.get_definition(request['params']['definition_terms'])
+        elif action == 'done_facts':
+            controller.done_facts(request['contexts']['currentacc'])
         elif action == 'ask_boolean_question':
             # get the question from defence
             controller.set_next_step()
         elif action == 'ask_boolean_answer':
             # save the answer, trigger next question or state.
             controller.boolean_answer(request['contexts']['currentacc'], request['params']['answer'])
-            controller.set_next_step()
         else:
             pass
 

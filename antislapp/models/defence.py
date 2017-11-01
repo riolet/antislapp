@@ -1,3 +1,4 @@
+import copy
 import time
 import traceback
 import cPickle
@@ -9,11 +10,12 @@ from antislapp import index
 #   sued = True/False
 #   claims = [
 #       {allegation: blah blah X
+#       paragraph: "4"
 #       plead: agree/deny/withhold
-#       Truth:
+#       TruthDefence:
 #           valid: true/false
 #           facts: ['facts1', 'facts2']
-#       Absolute Privilege:
+#       AbsoluteDefence:
 #           valid: ...
 #           facts: [...]
 #       ...
@@ -34,12 +36,13 @@ class BaseDefence:
         self.import_state(state)
 
     def import_state(self, data):
-        self.applicable = data['applicable']
-        self.facts_done = data['facts_done']
-        self.facts = data['facts']
+        self.applicable = data.get('applicable', None)
+        self.facts_done = data.get('facts_done', False)
+        self.facts = data.get('facts', [])
 
     def export_state(self):
         data = {
+            'name': self.name,
             'applicable': self.applicable,
             'facts_done': self.facts_done,
             'facts': [str(fact) for fact in self.facts]
@@ -50,14 +53,20 @@ class BaseDefence:
         next_step = None
         if self.applicable is None:
             next_step = {
-                'step': self.name
+                'next_step': self.name
             }
-        elif self.facts_done is not True:
+        elif self.applicable is True and self.facts_done is not True:
             next_step = {
-                'step': 'facts',
+                'next_step': 'facts',
                 'data': {'defence': self.name}
             }
         return next_step
+
+    def add_fact(self, fact):
+        self.facts.append(fact)
+
+    def update(self, params):
+        pass
 
 
 class TruthDefence(BaseDefence):
@@ -87,7 +96,7 @@ class ResponsibleDefence(BaseDefence):
 
     def import_state(self, data):
         BaseDefence.import_state(self, data)
-        self.special_question = data['special']
+        self.special_question = data.get('special', None)
 
     def export_state(self):
         data = BaseDefence.export_state(self)
@@ -98,19 +107,32 @@ class ResponsibleDefence(BaseDefence):
         next_step = None
         if self.applicable is None:
             next_step = {
-                'step': self.name
+                'next_step': self.name
             }
-        elif self.special_question is None:
+        elif self.applicable is True and self.special_question is None:
             next_step = {
-                'step': 'question',
+                'next_step': 'question',
                 'data': {'question': 'This is a special test follow-up question for responsible communication. Are you a human?'}
             }
-        elif self.facts_done is not True:
+        elif self.applicable is True and self.special_question is True and self.facts_done is not True:
             next_step = {
-                'step': 'facts',
+                'next_step': 'facts',
                 'data': {'defence': self.name}
             }
         return next_step
+
+    def update(self, params):
+        raise NotImplementedError
+
+
+def defence_ctor(state):
+    return {
+        'Truth': TruthDefence,
+        'Absolute Privilege': AbsoluteDefence,
+        'Qualified Privilege': QualifiedDefence,
+        'Fair Comment': FairCommentDefence,
+        'Responsible Communication': ResponsibleDefence
+    }[state['name']](state)
 
 
 class Defence:
@@ -125,21 +147,9 @@ class Defence:
         """
         self.db = db
         self.cid = conversation_id
-        qvars = {
-            'cid': conversation_id
-        }
-        rows = self.db.select(Defence.TABLE, what='data', where='conversation_id=$cid', vars=qvars)
-        row = rows.first()
-        if row is None:
-            self.reset()
-        else:
-            try:
-                self.data = cPickle.loads(str(row['data']))
-                now = int(time.time())
-                self.db.update(Defence.TABLE, where='conversation_id=$cid', vars=qvars, atime=now)
-            except:
-                traceback.print_exc()
-                self.reset()
+        self.data = {}
+        self.reset()
+        self.load()
 
     def reset(self):
         self.data = {
@@ -149,9 +159,49 @@ class Defence:
             'claims': []
         }
 
+    def load(self):
+        qvars = {'cid': self.cid}
+        rows = self.db.select(Defence.TABLE, what='data', where='conversation_id=$cid', vars=qvars)
+        row = rows.first()
+        if row is None:
+            return
+
+        try:
+            data = cPickle.loads(str(row['data']))
+            print("--- loading ---")
+            import pprint
+            pprint.pprint(data)
+            print("--- loading complete ---")
+            for claim in data['claims']:
+                for Def_name, Def_state in claim.iteritems():
+                    if Def_name in Defence.DEFENCES:
+                        claim[Def_name] = defence_ctor(Def_state)
+
+            now = int(time.time())
+            self.db.update(Defence.TABLE, where='conversation_id=$cid', vars=qvars, atime=now)
+            self.data = data
+        except:
+            traceback.print_exc()
+
     def save(self):
-        pickled_data = cPickle.dumps(self.data)
+        data = copy.copy(self.data)
+        claims = []
+        for self_claim in self.data['claims']:
+            claim = {}
+            for k, v in self_claim.iteritems():
+                if isinstance(v, BaseDefence):
+                    claim[k] = v.export_state()
+                else:
+                    claim[k] = v
+            claims.append(claim)
+        data['claims'] = claims
+        print("--- dumping ---")
+        import pprint
+        pprint.pprint(data)
+        print("--- dumping complete ---")
+        pickled_data = cPickle.dumps(data)
         now = int(time.time())
+
         with self.db.transaction():
             self.db.delete(Defence.TABLE, where='conversation_id=$cid', vars={'cid': self.cid})
             self.db.insert(Defence.TABLE, conversation_id=self.cid, data=pickled_data, atime=now)
@@ -179,9 +229,9 @@ class Defence:
     def add_allegation(self, allegation, paragraph):
         self.data['claims'].append({
             'allegation': allegation,
-            'paragraph': paragraph
+            'paragraph': paragraph,
+            'plead': None
         })
-
         return len(self.data['claims']) - 1
 
     def get_claims(self):
@@ -195,36 +245,39 @@ class Defence:
             raise ValueError("Plead must be one of {}".format(Defence.PLEADS))
         context['plead'] = plead
 
-    def add_defence(self, claim_id, defence, valid, complete):
+    def add_defence(self, claim_id, defence, applicable):
         # Raises IndexError if claim_id is missing.
         # Raises ValueError if defence isn't one of Defence.DEFENCES
-        # Casts valid to bool.
+        # Casts applicable to bool.
         context = self.data['claims'][claim_id]
         if defence not in Defence.DEFENCES:
             raise ValueError("Defence must be one of {}".format(Defence.DEFENCES))
-        context[defence] = {}
-        context[defence]['valid'] = bool(valid)
-        context[defence]['complete'] = complete
+
+        context[defence] = defence_ctor({'name': defence})
+        context[defence].applicable = bool(applicable)
 
     def get_defence(self, claim_id, defence):
         context = self.data['claims'][claim_id]
         return context.get(defence, None)
 
-    def update_defence(self, claim_id, defence, key, value):
+    def update_defence(self, claim_id, defence, params):
         context = self.data['claims'][claim_id]
-        defence = context[defence]
-        defence[key] = value
+        defence_model = context[defence]
+        defence_model.update(params)
 
-    def add_fact(self, claim_id, defence, facts):
+    def add_fact(self, claim_id, defence, fact):
         # Raises IndexError on missing claim_id
         # Raises ValueError if defence has not been pleaded.
         context = self.data['claims'][claim_id]
         if defence not in context:
             raise ValueError
-        if 'facts' in context[defence]:
-            context[defence]['facts'].append(facts)
-        else:
-            context[defence]['facts'] = [facts]
+        context[defence].add_fact(fact)
+
+    def done_facts(self, claim_id, defence):
+        context = self.data['claims'][claim_id]
+        if defence not in context:
+            raise ValueError
+        context[defence].facts_done = True
 
     def get_agreed(self):
         agreed = []
@@ -246,6 +299,62 @@ class Defence:
             if claim.get('plead', 'withhold') == 'deny':
                 denied.append(claim)
         return denied
+
+    def get_next_step(self):
+        """
+        possible next steps include:
+            Get plead for claim X
+            Process Truth...ResponsibleCommunication defence for claim X
+        :return: None or dict with keys:
+            claim_id: \d
+            allegation: ""
+            next_step: ""
+            data: {}  # optional
+        """
+        for claim_id, claim in enumerate(self.data['claims']):
+            # Every claim needs to be pleaded one way or another.
+            if claim['plead'] is None:
+                next_step = {
+                    'claim_id': claim_id,
+                    'allegation': claim['allegation'],
+                    'next_step': 'plead',
+                }
+                return next_step
+
+            # Only claims that are denied have followup questions
+            if claim['plead'] is not 'deny':
+                continue
+
+            # Inquire about each possible defence.
+            for defence in Defence.DEFENCES:
+                d = claim.get(defence, None)
+
+                # This defence hasn't been brought up yet.
+                if d is None:
+                    next_step = {
+                        'claim_id': claim_id,
+                        'allegation': claim['allegation'],
+                        'next_step': defence,
+                    }
+                    return next_step
+
+                # What to do if d isn't a BaseDefence instance?
+                # if not isinstance(d, BaseDefence):
+                #    del claim[defence]
+                assert isinstance(d, BaseDefence)
+
+                # If this defence is fully explored, move on.
+                def_ns = d.next_step()
+                if def_ns is None:
+                    continue
+
+                next_step = {
+                    'claim_id': claim_id,
+                    'allegation': claim['allegation'],
+                    'next_step': def_ns['next_step'],
+                    'data': def_ns.get('data', {}),
+                }
+                return next_step
 
     def report(self):
         if self.get_sued() is None:
