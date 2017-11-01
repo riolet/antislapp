@@ -39,10 +39,13 @@ class Fulfill:
     def extract_parameters(data):
         params = data.get('result', {}).get('parameters', {})
         for key in params:
-            if params[key].lower() == 'false':
-                params[key] = False
-            elif params[key].lower() == 'true':
-                params[key] = True
+            try:
+                if params[key].lower() == 'false':
+                    params[key] = False
+                elif params[key].lower() == 'true':
+                    params[key] = True
+            except:
+                pass
         return params
 
     @staticmethod
