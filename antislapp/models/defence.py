@@ -90,7 +90,6 @@ class FairCommentDefence(BaseDefence):
 
 class ResponsibleDefence(BaseDefence):
     def __init__(self, state):
-        BaseDefence.__init__(self, 'Responsible Communication', state)
         self.extra_questions = [
             "There are a few questions to consider with the responsible communication defence. You don't need to answer yes to all of them, but should agree with more than not.\n\nDid your effort to research and verify your words match the seriousness of the allegation?",
             "Did your diligence also match the public importance of the matter? for example national security should be treated more seriously than everyday politics.",
@@ -101,10 +100,12 @@ class ResponsibleDefence(BaseDefence):
             "Was the point that a defamatory statement had been made, rather than that it was fact? Like reporting on a heated exchange between politicians. This can be a defence if the statement can be attributed, you indicated it wasn't verified, both sides were fairly reported, and the context was clear."
         ]
         self.extra_answers = [None] * len(self.extra_questions)
+        BaseDefence.__init__(self, 'Responsible Communication', state)
 
     def import_state(self, data):
         BaseDefence.import_state(self, data)
-        self.extra_answers = data.get('extra_answers', None)
+        self.extra_answers = data.get('extra_answers', [None] * len(self.extra_questions))
+        print("importing: extra_answers is now {}".format(self.extra_answers))
 
     def export_state(self):
         data = BaseDefence.export_state(self)
@@ -131,7 +132,7 @@ class ResponsibleDefence(BaseDefence):
                     return next_step
 
         # if this is applicable, and the special question was true, get the facts.
-        elif self.applicable is True and self.special_question is True and self.facts_done is not True:
+        elif self.applicable is True and None not in self.extra_answers and self.facts_done is not True:
             next_step = {
                 'next_step': 'facts',
                 'data': {'defence': self.name}

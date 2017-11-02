@@ -1,5 +1,5 @@
 import pytest
-from antislapp.models.defence import Defence
+from antislapp.models.defence import Defence, ResponsibleDefence
 from antislapp import index
 
 db = index.db
@@ -243,6 +243,7 @@ def test_determine_next_defence():
 
 
 def test_resp_comm():
+    resp_comm = ResponsibleDefence({})
     d1 = Defence(db, 'convo1')
     d1.reset()
     d1.save()
@@ -253,38 +254,52 @@ def test_resp_comm():
     d1.add_defence(ac1, 'Qualified Privilege', False)
     d1.add_defence(ac1, 'Fair Comment', False)
     d1.add_defence(ac1, 'Responsible Communication', True)
-    # question edits for simpler testing:
-    _temp_ = d1.get_defence(ac1, 'Responsible Communication')
-    assert hasattr(_temp_, 'extra_questions')
-    assert hasattr(_temp_, 'extra_answers')
-    _temp_.extra_questions = ['Question 1', 'Question 2', 'Question 3', 'Question 4']
-    _temp_.extra_answers = [None, None, None, None]
 
     expected = {
         'claim_id': ac1,
         'allegation': 'issue A',
         'defence': 'Responsible Communication',
         'next_step': 'question',
-        'data': {'question': 'Question 1'},
+        'data': {'question': resp_comm.extra_questions[0]},
     }
     assert d1.get_next_step() == expected
+    d1.update_defence(ac1, 'Responsible Communication', {'question': resp_comm.extra_questions[0], 'answer': True})
+    d1.save()
 
-    d1.update_defence(ac1, 'Responsible Communication', {'question': 'Question 1', 'answer': True})
-    expected['data']['question'] = 'Question 2'
+    d1 = Defence(db, 'convo1')
+    expected['data']['question'] = resp_comm.extra_questions[1]
     assert d1.get_next_step() == expected
-    d1.update_defence(ac1, 'Responsible Communication', {'question': 'Question 2', 'answer': False})
-    expected['data']['question'] = 'Question 3'
+    d1.update_defence(ac1, 'Responsible Communication', {'question': resp_comm.extra_questions[1], 'answer': False})
+    d1.save()
+
+    d1 = Defence(db, 'convo1')
+    expected['data']['question'] = resp_comm.extra_questions[2]
     assert d1.get_next_step() == expected
-    d1.update_defence(ac1, 'Responsible Communication', {'question': 'Question 3', 'answer': True})
-    expected['data']['question'] = 'Question 4'
+    d1.update_defence(ac1, 'Responsible Communication', {'question': resp_comm.extra_questions[2], 'answer': True})
+    d1.save()
+
+    d1 = Defence(db, 'convo1')
+    expected['data']['question'] = resp_comm.extra_questions[3]
     assert d1.get_next_step() == expected
-    d1.update_defence(ac1, 'Responsible Communication', {'question': 'Question 4', 'answer': 'skip'})
-    assert d1.get_next_step() == None
+    d1.update_defence(ac1, 'Responsible Communication', {'question': resp_comm.extra_questions[3], 'answer': 'skip'})
+    d1.update_defence(ac1, 'Responsible Communication', {'question': resp_comm.extra_questions[4], 'answer': True})
+    d1.update_defence(ac1, 'Responsible Communication', {'question': resp_comm.extra_questions[5], 'answer': 'skip'})
+    d1.update_defence(ac1, 'Responsible Communication', {'question': resp_comm.extra_questions[6], 'answer': False})
+    d1.save()
+
+    d1 = Defence(db, 'convo1')
+    expected = {
+        'claim_id': ac1,
+        'allegation': 'issue A',
+        'defence': 'Responsible Communication',
+        'next_step': 'facts',
+        'data': {'defence': 'Responsible Communication'},
+    }
+    assert d1.get_next_step() == expected
     rc = d1.get_defence(ac1, 'Responsible Communication')
     assert rc.applicable == True
-    d1.update_defence(ac1, 'Responsible Communication', {'question': 'Question 4', 'answer': False})
+    d1.update_defence(ac1, 'Responsible Communication', {'question': resp_comm.extra_questions[3], 'answer': False})
     assert rc.applicable == False
-
 
 
 def test_report():
