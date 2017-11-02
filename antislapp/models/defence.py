@@ -104,11 +104,11 @@ class ResponsibleDefence(BaseDefence):
 
     def import_state(self, data):
         BaseDefence.import_state(self, data)
-        self.special_question = data.get('special', None)
+        self.extra_answers = data.get('extra_answers', None)
 
     def export_state(self):
         data = BaseDefence.export_state(self)
-        data['special'] = self.special_question
+        data['extra_answers'] = self.extra_answers
         return data
 
     def next_step(self):
