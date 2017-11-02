@@ -444,6 +444,7 @@ def test_everything():
     response = c.get_response()
     del c
     assert set(response.keys()) == {'source', 'speech', 'displayText'}
-    assert response['speech'] == "blah"
+    assert response['speech'] == response['displayText']
+    assert response['speech'].count("Download") == 2
 
 

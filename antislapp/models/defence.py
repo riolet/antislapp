@@ -91,7 +91,16 @@ class FairCommentDefence(BaseDefence):
 class ResponsibleDefence(BaseDefence):
     def __init__(self, state):
         BaseDefence.__init__(self, 'Responsible Communication', state)
-        self.special_question = None
+        self.extra_questions = [
+            "There are a few questions to consider with the responsible communication defence. You don't need to answer yes to all of them, but should agree with more than not.\n\nDid your effort to research and verify your words match the seriousness of the allegation?",
+            "Did your diligence also match the public importance of the matter? for example national security should be treated more seriously than everyday politics.",
+            "Was the urgency to publish great enough that you couldn't afford a reasonable delay that would have detected the error?",
+            "Did you consider the reliability of your sources? One must be more diligent if your sources are untrustworthy or biased.",
+            "Did you try to get both sides of the story? It is important to try to be fair and will help your case.",
+            "Was the defamatory statement's inclusion justifiable?",
+            "Was the point that a defamatory statement had been made, rather than that it was fact? Like reporting on a heated exchange between politicians. This can be a defence if the statement can be attributed, you indicated it wasn't verified, both sides were fairly reported, and the context was clear."
+        ]
+        self.extra_answers = [None] * len(self.extra_questions)
 
     def import_state(self, data):
         BaseDefence.import_state(self, data)
@@ -112,11 +121,14 @@ class ResponsibleDefence(BaseDefence):
             }
 
         # if this is applicable, ask any additional questions to verify.
-        elif self.applicable is True and self.special_question is None:
-            next_step = {
-                'next_step': 'question',
-                'data': {'question': 'This is a special test follow-up question for responsible communication. Are you a human?'}
-            }
+        elif self.applicable is True and None in self.extra_answers:
+            for i, ans in enumerate(self.extra_answers):
+                if ans is None:
+                    next_step = {
+                        'next_step': 'question',
+                        'data': {'question': self.extra_questions[i]}
+                    }
+                    return next_step
 
         # if this is applicable, and the special question was true, get the facts.
         elif self.applicable is True and self.special_question is True and self.facts_done is not True:
@@ -129,7 +141,21 @@ class ResponsibleDefence(BaseDefence):
     def update(self, params):
         # params should include keys 'question' and 'answer'
         # 'answer' should be one of True, False, 'skip'
-        self.special_question = params['answer']
+
+        # update the question list.
+        question = params['question']
+        answer = params['answer']
+        index = self.extra_questions.index(question)
+        self.extra_answers[index] = answer
+
+        # if done, check if that changes anything.
+        if None not in self.extra_answers:
+            count_yes = self.extra_answers.count(True)
+            count_no = self.extra_answers.count(False)
+            if count_yes > 0 and count_yes > count_no:
+                self.applicable = True
+            else:
+                self.applicable = False
 
 
 def defence_ctor(state):
@@ -288,7 +314,8 @@ class Defence:
     def get_withheld(self):
         withheld = []
         for claim in self.data['claims']:
-            if claim.get('plead', 'withhold') == 'withhold':
+            print claim
+            if claim['plead'] == 'withhold' or claim['plead'] is None:
                 withheld.append(claim)
         return withheld
 
@@ -311,7 +338,6 @@ class Defence:
             defence: ""  # optional
             data: {}  # optional
         """
-        print("---- restarting get_next_step ----")
         for claim_id, claim in enumerate(self.data['claims']):
             # Every claim needs to be pleaded one way or another.
             if claim['plead'] is None:
@@ -326,7 +352,6 @@ class Defence:
                 continue
             # Inquire about each possible defence.
             for defence in Defence.DEFENCES:
-                print("  Defence {}:".format(defence))
                 d = claim.get(defence, None)
 
                 # This defence hasn't been brought up yet.
