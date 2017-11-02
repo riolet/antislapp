@@ -207,3 +207,243 @@ def test_everything():
     # me: yes
     # AI: what is your fact?
     # me: fact 2
+    c = controller.Controller(conversation, def_response)
+    context = {u'lifespan': 18,
+               u'name': u'currentacc',
+               u'parameters': {u'allegation': u'issue C',
+                               u'applicable': u'true',
+                               u'applicable.original': u'',
+                               u'claim_id': float(claim_id3),
+                               u'defence': u'Truth',
+                               u'fact': u'fact 2',
+                               u'fact.original': u'fact 2',
+                               u'plead': u'deny',
+                               u'plead.original': u''}}
+    fact = u'fact 2'
+    c.add_fact(context, fact)
+    c.save()
+    response = c.get_response()
+    del c
+    del context
+    del fact
+    assert set(response.keys()) == {'source', 'speech', 'displayText'}
+    assert response['speech'] == def_response
+    assert response['displayText'] == def_response
+
+    # AI: Ok, I've recorded that as "fact 2." Do you have any more facts?
+    # me: no
+
+    c = controller.Controller(conversation, def_response)
+    context = {u'lifespan': 17,
+               u'name': u'currentacc',
+               u'parameters': {u'allegation': u'issue C',
+                               u'applicable': u'true',
+                               u'applicable.original': u'',
+                               u'claim_id': float(claim_id3),
+                               u'defence': u'Truth',
+                               u'fact': u'fact 2',
+                               u'fact.original': u'fact 2',
+                               u'plead': u'deny',
+                               u'plead.original': u''}}
+    c.done_facts(context)
+    c.save()
+    response = c.get_response()
+    del c
+    del context
+    assert set(response.keys()) == {'source', 'followupEvent', 'contextOut'}
+    assert response['followupEvent'] == {'data': {}, 'name': 'trigger-absolute'}
+    assert response['contextOut'] == [{'lifespan': 20,
+                                       'name': 'currentacc',
+                                       'parameters': {'allegation': 'issue C', 'claim_id': claim_id3, 'defence': 'Absolute Privilege'}}]
+
+
+    # AI: Alright, can you use Absolute Privilege? This defence applies if your words were spoken in a courtroom or parliament where you had the right to speak freely. Usually when participating in a trial.
+    # me: no
+
+    c = controller.Controller(conversation, def_response)
+    context = {u'lifespan': 19,
+              u'name': u'currentacc',
+              u'parameters': {u'allegation': u'issue C',
+                              u'applicable': u'false',
+                              u'applicable.original': u'',
+                              u'claim_id': float(claim_id3),
+                              u'defence': u'Absolute Privilege',
+                              u'plead': u'deny',
+                              u'plead.original': u''}}
+    params = {u'applicable': False}
+    c.defence_check(context, params)
+    c.save()
+    response = c.get_response()
+    del c
+    del context
+    assert set(response.keys()) == {'source', 'followupEvent', 'contextOut'}
+    assert response['followupEvent'] == {'data': {}, 'name': 'trigger-qualified'}
+    assert response['contextOut'] == [{'lifespan': 20,
+                                       'name': 'currentacc',
+                                       'parameters': {'allegation': 'issue C', 'claim_id': claim_id3, 'defence': 'Qualified Privilege'}}]
+
+
+    # AI: ... Qualified Privilege? ...
+    # me: no
+
+    c = controller.Controller(conversation, def_response)
+    context = {u'lifespan': 19,
+              u'name': u'currentacc',
+              u'parameters': {u'allegation': u'issue C',
+                              u'applicable': u'false',
+                              u'applicable.original': u'',
+                              u'claim_id': float(claim_id3),
+                              u'defence': u'Qualified Privilege',
+                              u'plead': u'deny',
+                              u'plead.original': u''}}
+    params = {u'applicable': False}
+    c.defence_check(context, params)
+    c.save()
+    response = c.get_response()
+    del c
+    del context
+    assert set(response.keys()) == {'source', 'followupEvent', 'contextOut'}
+    assert response['followupEvent'] == {'data': {}, 'name': 'trigger-fair'}
+    assert response['contextOut'] == [{'lifespan': 20,
+                                       'name': 'currentacc',
+                                       'parameters': {'allegation': 'issue C', 'claim_id': claim_id3, 'defence': 'Fair Comment'}}]
+
+    # AI: ... Fair Comment? ...
+    # me: Yes
+    c = controller.Controller(conversation, def_response)
+    context = {u'lifespan': 19,
+               u'name': u'currentacc',
+               u'parameters': {u'allegation': u'issue C',
+                               u'applicable': u'true',
+                               u'applicable.original': u'',
+                               u'claim_id': float(claim_id3),
+                               u'defence': u'Fair Comment',
+                               u'fact': u'fact 2',
+                               u'fact.original': u'fact 2',
+                               u'plead': u'deny',
+                               u'plead.original': u''}}
+    params = {u'applicable': True}
+    c.defence_check(context, params)
+    c.save()
+    response = c.get_response()
+    del c
+    del context
+    del params
+    assert set(response.keys()) == {'source', 'followupEvent', 'contextOut'}
+    assert response['followupEvent'] == {'data': {}, 'name': 'trigger-facts'}
+    assert response['contextOut'] == [{'lifespan': 20,
+                                       'name': 'currentacc',
+                                       'parameters': {'allegation': 'issue C', 'claim_id': claim_id3, 'defence': 'Fair Comment'}}]
+
+    # AI: What are the facts that would support the Fair Comment defence? Just the facts here, not any specific evidence at this point. Please list them out one at a time.
+    # me: Fact 5
+    c = controller.Controller(conversation, def_response)
+    context = {u'lifespan': 19,
+               u'name': u'currentacc',
+               u'parameters': {u'allegation': u'issue C',
+                               u'applicable': u'true',
+                               u'applicable.original': u'',
+                               u'claim_id': float(claim_id3),
+                               u'defence': u'Fair Comment',
+                               u'fact': u'Fact 5',
+                               u'fact.original': u'Fact 5',
+                               u'plead': u'deny',
+                               u'plead.original': u''}}
+    fact = u'Fact 5'
+    c.add_fact(context, fact)
+    c.save()
+    response = c.get_response()
+    del c
+    del context
+    del fact
+    assert set(response.keys()) == {'source', 'speech', 'displayText'}
+    assert response['speech'] == def_response
+    assert response['displayText'] == def_response
+
+    # AI: Ok, I've recorded that as "Fact 5." Do you have any more facts?
+    # me: no
+
+    c = controller.Controller(conversation, def_response)
+    context = {u'lifespan': 18,
+               u'name': u'currentacc',
+               u'parameters': {u'allegation': u'issue C',
+                               u'applicable': u'true',
+                               u'applicable.original': u'',
+                               u'claim_id': float(claim_id3),
+                               u'defence': u'Fair Comment',
+                               u'fact': u'Fact 5',
+                               u'fact.original': u'Fact 5',
+                               u'plead': u'deny',
+                               u'plead.original': u''}}
+    c.done_facts(context)
+    c.save()
+    response = c.get_response()
+    del c
+    del context
+    assert set(response.keys()) == {'source', 'followupEvent', 'contextOut'}
+    assert response['followupEvent'] == {'data': {}, 'name': 'trigger-responsible'}
+    assert response['contextOut'] == [{'lifespan': 20,
+                                       'name': 'currentacc',
+                                       'parameters': {'allegation': 'issue C', 'claim_id': claim_id3,
+                                                      'defence': 'Responsible Communication'}}]
+
+    # AI: ... Responsible Communication? ...
+    # me: yes
+    c = controller.Controller(conversation, def_response)
+    context = {u'lifespan': 19,
+               u'name': u'currentacc',
+               u'parameters': {u'allegation': u'issue C',
+                               u'applicable': u'true',
+                               u'applicable.original': u'',
+                               u'claim_id': float(claim_id3),
+                               u'defence': u'Responsible Communication',
+                               u'fact': u'fact 5',
+                               u'fact.original': u'fact 5',
+                               u'plead': u'deny',
+                               u'plead.original': u''}}
+    params = {u'applicable': True}
+    c.defence_check(context, params)
+    c.save()
+    response = c.get_response()
+    del c
+    del context
+    del params
+    assert set(response.keys()) == {'source', 'followupEvent', 'contextOut'}
+    assert response['followupEvent'] == {'data': {'question': 'This is a special test follow-up question for responsible communication. Are you a human?'}, 'name': 'trigger-bool'}
+    assert response['contextOut'] == [{'lifespan': 20,
+                                       'name': 'currentacc',
+                                       'parameters': {'allegation': 'issue C', 'claim_id': claim_id3,
+                                                      'defence': 'Responsible Communication'}}]
+
+    # AI: This is a special test follow-up question...
+    # me: no
+    c = controller.Controller(conversation, def_response)
+    context = {u'lifespan': 19,
+              u'name': u'currentacc',
+              u'parameters': {u'allegation': u'issue C',
+                              u'answer': u'true',
+                              u'answer.original': u'',
+                              u'claim_id': float(claim_id3),
+                              u'defence': u'Responsible Communication',
+                              u'question': u'This is a special test follow-up question for responsible communication. Are you a human?',
+                              u'question.original': u''}}
+    answer = False
+    c.boolean_answer(context, answer)
+    c.save()
+    response = c.get_response()
+    del c
+    del context
+    del answer
+    assert set(response.keys()) == {'source', 'followupEvent'}
+    assert response['followupEvent'] == {'data': {}, 'name': 'trigger-summary'}
+
+    # AI: in summary...
+    c = controller.Controller(conversation, def_response)
+    c.report()
+    c.save()
+    response = c.get_response()
+    del c
+    assert set(response.keys()) == {'source', 'speech', 'displayText'}
+    assert response['speech'] == "blah"
+
+

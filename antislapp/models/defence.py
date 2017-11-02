@@ -104,15 +104,21 @@ class ResponsibleDefence(BaseDefence):
 
     def next_step(self):
         next_step = None
+
+        # if it hasn't been checked, check for applicability of this defence
         if self.applicable is None:
             next_step = {
                 'next_step': self.name
             }
+
+        # if this is applicable, ask any additional questions to verify.
         elif self.applicable is True and self.special_question is None:
             next_step = {
                 'next_step': 'question',
                 'data': {'question': 'This is a special test follow-up question for responsible communication. Are you a human?'}
             }
+
+        # if this is applicable, and the special question was true, get the facts.
         elif self.applicable is True and self.special_question is True and self.facts_done is not True:
             next_step = {
                 'next_step': 'facts',
@@ -121,7 +127,9 @@ class ResponsibleDefence(BaseDefence):
         return next_step
 
     def update(self, params):
-        raise NotImplementedError
+        # params should include keys 'question' and 'answer'
+        # 'answer' should be one of True, False, 'skip'
+        self.special_question = params['answer']
 
 
 def defence_ctor(state):

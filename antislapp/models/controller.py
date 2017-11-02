@@ -126,8 +126,7 @@ class Controller:
 
             for defence in Defence.DEFENCES:
                 if defence in claim and claim[defence].applicable:
-                    facts = claim[defence].get('facts', [])
-                    for fact in facts:
+                    for fact in claim[defence].facts:
                         p_number = claim['paragraph']
                         fact = re.sub(r'\bme\b', 'the defendant', fact)
                         fact = re.sub(r"\b[Ii]('m|\sam)\b", 'the defendant is', fact)
