@@ -188,20 +188,22 @@ def test_everything():
                                u'applicable.original': u'',
                                u'claim_id': float(claim_id3),
                                u'defence': u'Truth',
-                               u'fact': u'fact 1',
-                               u'fact.original': u'fact 1',
+                               u'fact': u'Fact 1',
+                               u'fact.original': u'Fact 1',
                                u'plead': u'deny',
                                u'plead.original': u''}}
-    fact = u'fact 1'
+    fact = u'Fact 1'
     c.add_fact(context, fact)
     c.save()
     response = c.get_response()
     del c
     del context
     del fact
-    assert set(response.keys()) == {'source', 'followupEvent', 'contextOut'}
-    assert response['followupEvent'] == {'data': {}, 'name': 'trigger-facts'}
-    assert response['contextOut'] == [{'lifespan': 20,
-                                       'name': 'currentacc',
-                                       'parameters': {'allegation': 'issue C', 'claim_id': claim_id3,
-                                                      'defence': 'Truth'}}]
+    assert set(response.keys()) == {'source', 'speech', 'displayText'}
+    assert response['speech'] == def_response
+    assert response['displayText'] == def_response
+
+    # AI: Ok, I've recorded that as "Fact 1." Do you have any more facts?
+    # me: yes
+    # AI: what is your fact?
+    # me: fact 2

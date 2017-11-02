@@ -94,7 +94,7 @@ class Controller:
         cid = int(float(context['parameters']['claim_id']))
         defence = context['parameters']['defence']
         self.defence.add_fact(cid, defence, fact)
-        self.set_next_step()
+        #self.set_next_step()
 
     def boolean_answer(self, context, answer):
         cid = int(float(context['parameters']['claim_id']))
