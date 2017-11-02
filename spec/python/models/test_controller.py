@@ -9,34 +9,28 @@ def blank_controller():
     return c
 
 
-def test_join_list():
-    ex = Controller.join_list
-    assert ex([]) == ''
-    assert ex(['a']) == 'a'
-    assert ex(['a', 'b']) == 'a and b'
-    assert ex(['a', 'b', 'c']) == 'a, b, and c'
-    assert ex(['a', 'b', 'c', 'd']) == 'a, b, c, and d'
-
-
 def test_sued():
     c = blank_controller()
     assert c.defence.data['sued'] == None
-    c.set_sued(True)
+    assert c.defence.get_plaintiff() == None
+    c.set_sued(True, 'Bad Guy')
     assert c.defence.data['sued'] == True
-    c.set_sued(False)
+    assert c.defence.get_plaintiff() == 'Bad Guy'
+    c.set_sued(False, 'Bad Guy2')
     assert c.defence.data['sued'] == False
+    assert c.defence.get_plaintiff() == 'Bad Guy2'
 
 
-def test_add_accusation():
+def test_add_allegation():
     c = blank_controller()
     assert c.defence.data['claims'] == []
-    c.add_accusation('accu1')
-    c.add_accusation('accu2')
-    c.add_accusation('accu1')
+    c.add_allegation('accu1', 4)
+    c.add_allegation('accu2', 5)
+    c.add_allegation('accu1', 6)
     assert c.defence.data['claims'] == [
-        {'accusation': 'accu1'},
-        {'accusation': 'accu2'},
-        {'accusation': 'accu1'},
+        {'allegation': 'accu1', 'paragraph': 4, 'plead': None},
+        {'allegation': 'accu2', 'paragraph': 5, 'plead': None},
+        {'allegation': 'accu1', 'paragraph': 6, 'plead': None},
     ]
 
 
@@ -56,41 +50,38 @@ def test_get_definition():
     }
 
 
-def test_done_accusations():
+def test_set_next_step():
     c = blank_controller()
     assert c.get_response() == {
         'speech': 'def_res',
         'displayText': 'def_res',
         'source': 'riobot'
     }
-    c.done_accusations()
+    c.set_next_step()
     assert c.get_response() == {
         'source': 'riobot',
         'followupEvent': {'name': 'trigger-summary', 'data': {}}
     }
-    acc_id = c.add_accusation('accu1')
-    c.done_accusations()
-    assert c.get_response() == {
-        'source': 'riobot',
-        'followupEvent': {'name': 'trigger-plead', 'data': {}},
-        'contextOut': [{
-            'name': 'currentacc',
-            'lifespan': 20,
-            'parameters': {
-                'acc': 'accu1',
-                'acc_id': acc_id,
-                'qst': 'plead'
-            }
-        }]
-    }
+    acc_id = c.add_allegation('accu1', 4)
+    c.set_next_step()
+    resp = c.get_response()
+    assert resp['followupEvent'] == {'name': 'trigger-plead', 'data': {}}
+    assert resp['contextOut'] == [{
+        'name': 'currentacc',
+        'lifespan': 20,
+        'parameters': {
+            'allegation': 'accu1',
+            'claim_id': acc_id,
+        }
+    }]
 
 
 def test_make_plea():
     c = blank_controller()
-    acc_id = c.add_accusation('accu1')
-    context = {'parameters': {'acc_id': acc_id}}
+    acc_id = c.add_allegation('accu1', 4)
+    context = {'parameters': {'claim_id': acc_id}}
     params = {'plead': 'agree'}
-    c.done_accusations()
+    c.set_next_step()
     assert c.get_response() == {
         'source': 'riobot',
         'followupEvent': {'name': 'trigger-plead', 'data': {}},
@@ -98,9 +89,8 @@ def test_make_plea():
             'name': 'currentacc',
             'lifespan': 20,
             'parameters': {
-                'acc': 'accu1',
-                'acc_id': acc_id,
-                'qst': 'plead'
+                'allegation': 'accu1',
+                'claim_id': acc_id,
             }
         }]
     }
@@ -110,7 +100,7 @@ def test_make_plea():
         'source': 'riobot',
     }
     c.make_plea(context, params)
-    c.done_accusations()
+    c.set_next_step()
     assert c.get_response() == {
         'source': 'riobot',
         'followupEvent': {'name': 'trigger-summary', 'data': {}}
@@ -119,11 +109,11 @@ def test_make_plea():
 
 def test_defence_check():
     c = blank_controller()
-    acc_id = c.add_accusation('accu1')
-    context = {'parameters': {'acc_id': acc_id}}
+    acc_id = c.add_allegation('accu1', 4)
+    context = {'parameters': {'claim_id': acc_id}}
     params = {'plead': 'deny'}
     c.make_plea(context, params)
-    c.done_accusations()
+    c.set_next_step()
     assert c.get_response() == {
         'source': 'riobot',
         'followupEvent': {'name': 'trigger-truth', 'data': {}},
@@ -131,19 +121,19 @@ def test_defence_check():
             'name': 'currentacc',
             'lifespan': 20,
             'parameters': {
-                'acc': 'accu1',
-                'acc_id': acc_id,
-                'qst': 'Truth'
+                'allegation': 'accu1',
+                'claim_id': acc_id,
+                'defence': 'Truth'
             }
         }]
     }
 
     context = {'parameters': {
-        'acc_id': acc_id,
-        'acc': 'accu1',
-        'qst': 'Truth'}
+        'claim_id': acc_id,
+        'allegation': 'accu1',
+        'defence': 'Truth'}
     }
-    params = {'valid': False}
+    params = {'applicable': False}
     c.defence_check(context, params)
     assert c.get_response() == {
         'source': 'riobot',
@@ -152,19 +142,19 @@ def test_defence_check():
             'name': 'currentacc',
             'lifespan': 20,
             'parameters': {
-                'acc': 'accu1',
-                'acc_id': acc_id,
-                'qst': 'Absolute Privilege'
+                'allegation': 'accu1',
+                'claim_id': acc_id,
+                'defence': 'Absolute Privilege'
             }
         }]
     }
 
     context = {'parameters': {
-        'acc_id': acc_id,
-        'acc': 'accu1',
-        'qst': 'Truth'}
+        'claim_id': acc_id,
+        'allegation': 'accu1',
+        'defence': 'Truth'}
     }
-    params = {'valid': True}
+    params = {'applicable': True}
     c.defence_check(context, params)
     assert c.get_response() == {
         'source': 'riobot',
@@ -173,9 +163,9 @@ def test_defence_check():
             'name': 'currentacc',
             'lifespan': 20,
             'parameters': {
-                'acc': 'accu1',
-                'acc_id': acc_id,
-                'qst': 'Truth'
+                'allegation': 'accu1',
+                'claim_id': acc_id,
+                'defence': 'Truth'
             }
         }]
     }
@@ -183,24 +173,24 @@ def test_defence_check():
 
 def test_add_facts():
     c = blank_controller()
-    acc_id = c.add_accusation('accu1')
-    context = {'parameters': {'acc_id': acc_id}}
+    acc_id = c.add_allegation('accu1', 4)
+    context = {'parameters': {'claim_id': acc_id}}
     params = {'plead': 'deny'}
     c.make_plea(context, params)
     context = {'parameters': {
-        'acc_id': acc_id,
-        'acc': 'accu1',
-        'qst': 'Truth'}
+        'claim_id': acc_id,
+        'allegation': 'accu1',
+        'defence': 'Truth'}
     }
-    params = {'valid': True}
+    params = {'applicable': True}
     c.defence_check(context, params)
 
     context = {'parameters': {
-        'acc_id': acc_id,
-        'acc': 'accu1',
-        'qst': 'Truth'}
+        'claim_id': acc_id,
+        'allegation': 'accu1',
+        'defence': 'Truth'}
     }
-    params = {'valid': True}
+    params = {'applicable': True}
     c.defence_check(context, params)
     assert c.get_response() == {
         'source': 'riobot',
@@ -209,17 +199,17 @@ def test_add_facts():
             'name': 'currentacc',
             'lifespan': 20,
             'parameters': {
-                'acc': 'accu1',
-                'acc_id': acc_id,
-                'qst': 'Truth'
+                'allegation': 'accu1',
+                'claim_id': acc_id,
+                'defence': 'Truth'
             }
         }]
     }
 
     context = {'parameters': {
-        'acc_id': acc_id,
-        'acc': 'accu1',
-        'qst': 'Truth'}
+        'claim_id': acc_id,
+        'allegation': 'accu1',
+        'defence': 'Truth'}
     }
     fact = "fact 1"
     c.response = {
@@ -229,16 +219,7 @@ def test_add_facts():
     }
     c.add_fact(context, fact)
     assert c.get_response() == {
+        'source': 'riobot',
         'speech': c.default,
         'displayText': c.default,
-        'source': 'riobot',
-        'contextOut': [{
-            'name': 'currentacc',
-            'lifespan': 20,
-            'parameters': {
-                'acc': 'accu1',
-                'acc_id': acc_id,
-                'qst': 'Truth'
-            }
-        }]
     }

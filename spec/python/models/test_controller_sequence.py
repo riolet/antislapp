@@ -1,5 +1,6 @@
 from antislapp import index
 from antislapp.models import controller
+from antislapp.models.defence import ResponsibleDefence
 
 conversation = 'abc123'
 def_response = 'default response'
@@ -129,7 +130,7 @@ def test_everything():
                                        'name': 'currentacc',
                                        'parameters': {'allegation': 'issue C', 'claim_id': claim_id3}}]
 
-    # AI: Do you accept, deny, or are you unable to answer the allegation of "issue B"?
+    # AI: Do you accept, deny, or are you unable to answer the allegation of "issue C"?
     # me: deny
     c = controller.Controller(conversation, def_response)
     context = {u'lifespan': 19,
@@ -389,6 +390,7 @@ def test_everything():
 
     # AI: ... Responsible Communication? ...
     # me: yes
+    rcd = ResponsibleDefence({})
     c = controller.Controller(conversation, def_response)
     context = {u'lifespan': 19,
                u'name': u'currentacc',
@@ -409,14 +411,14 @@ def test_everything():
     del context
     del params
     assert set(response.keys()) == {'source', 'followupEvent', 'contextOut'}
-    assert response['followupEvent'] == {'data': {'question': 'This is a special test follow-up question for responsible communication. Are you a human?'}, 'name': 'trigger-bool'}
+    assert response['followupEvent'] == {'data': {'question': rcd.extra_questions[0]}, 'name': 'trigger-bool'}
     assert response['contextOut'] == [{'lifespan': 20,
                                        'name': 'currentacc',
                                        'parameters': {'allegation': 'issue C', 'claim_id': claim_id3,
                                                       'defence': 'Responsible Communication'}}]
 
-    # AI: This is a special test follow-up question...
-    # me: no
+    # AI: There are a few questions to consider... Seriousness?
+    # me: yes
     c = controller.Controller(conversation, def_response)
     context = {u'lifespan': 19,
               u'name': u'currentacc',
@@ -425,7 +427,33 @@ def test_everything():
                               u'answer.original': u'',
                               u'claim_id': float(claim_id3),
                               u'defence': u'Responsible Communication',
-                              u'question': u'This is a special test follow-up question for responsible communication. Are you a human?',
+                              u'question': rcd.extra_questions[0],
+                              u'question.original': u''}}
+    answer = True
+    c.boolean_answer(context, answer)
+    c.save()
+    response = c.get_response()
+    del c
+    del context
+    del answer
+    assert set(response.keys()) == {'source', 'contextOut', 'followupEvent'}
+    assert response['followupEvent'] == {'data': {'question': rcd.extra_questions[1]}, 'name': 'trigger-bool'}
+    assert response['contextOut'] == [{'lifespan': 20,
+                                       'name': 'currentacc',
+                                       'parameters': {'allegation': 'issue C', 'claim_id': claim_id3,
+                                                      'defence': 'Responsible Communication'}}]
+
+    # AI: There are a few questions to consider... Diligence?
+    # me: no
+    c = controller.Controller(conversation, def_response)
+    context = {u'lifespan': 19,
+              u'name': u'currentacc',
+              u'parameters': {u'allegation': u'issue C',
+                              u'answer': u'false',
+                              u'answer.original': u'',
+                              u'claim_id': float(claim_id3),
+                              u'defence': u'Responsible Communication',
+                              u'question': rcd.extra_questions[1],
                               u'question.original': u''}}
     answer = False
     c.boolean_answer(context, answer)
@@ -434,6 +462,148 @@ def test_everything():
     del c
     del context
     del answer
+    assert set(response.keys()) == {'source', 'contextOut', 'followupEvent'}
+    assert response['followupEvent'] == {'data': {'question': rcd.extra_questions[2]}, 'name': 'trigger-bool'}
+    assert response['contextOut'] == [{'lifespan': 20,
+                                       'name': 'currentacc',
+                                       'parameters': {'allegation': 'issue C', 'claim_id': claim_id3,
+                                                      'defence': 'Responsible Communication'}}]
+
+    # AI: There are a few questions to consider... Urgency?
+    # me: yes
+    c = controller.Controller(conversation, def_response)
+    context = {u'lifespan': 19,
+              u'name': u'currentacc',
+              u'parameters': {u'allegation': u'issue C',
+                              u'answer': u'true',
+                              u'answer.original': u'',
+                              u'claim_id': float(claim_id3),
+                              u'defence': u'Responsible Communication',
+                              u'question': rcd.extra_questions[2],
+                              u'question.original': u''}}
+    answer = True
+    c.boolean_answer(context, answer)
+    c.save()
+    response = c.get_response()
+    del c
+    del context
+    del answer
+    assert set(response.keys()) == {'source', 'contextOut', 'followupEvent'}
+    assert response['followupEvent'] == {'data': {'question': rcd.extra_questions[3]}, 'name': 'trigger-bool'}
+    assert response['contextOut'] == [{'lifespan': 20,
+                                       'name': 'currentacc',
+                                       'parameters': {'allegation': 'issue C', 'claim_id': claim_id3,
+                                                      'defence': 'Responsible Communication'}}]
+
+    # AI: There are a few questions to consider... Reliabilty?
+    # me: skip
+    c = controller.Controller(conversation, def_response)
+    context = {u'lifespan': 19,
+              u'name': u'currentacc',
+              u'parameters': {u'allegation': u'issue C',
+                              u'answer': u'skip',
+                              u'answer.original': u'',
+                              u'claim_id': float(claim_id3),
+                              u'defence': u'Responsible Communication',
+                              u'question': rcd.extra_questions[3],
+                              u'question.original': u''}}
+    answer = 'skip'
+    c.boolean_answer(context, answer)
+    c.save()
+    response = c.get_response()
+    del c
+    del context
+    del answer
+    assert set(response.keys()) == {'source', 'contextOut', 'followupEvent'}
+    assert response['followupEvent'] == {'data': {'question': rcd.extra_questions[4]}, 'name': 'trigger-bool'}
+    assert response['contextOut'] == [{'lifespan': 20,
+                                       'name': 'currentacc',
+                                       'parameters': {'allegation': 'issue C', 'claim_id': claim_id3,
+                                                      'defence': 'Responsible Communication'}}]
+
+    # AI: There are a few questions to consider... Equality?
+    # me: yes
+    c = controller.Controller(conversation, def_response)
+    context = {u'lifespan': 19,
+              u'name': u'currentacc',
+              u'parameters': {u'allegation': u'issue C',
+                              u'answer': u'true',
+                              u'answer.original': u'',
+                              u'claim_id': float(claim_id3),
+                              u'defence': u'Responsible Communication',
+                              u'question': rcd.extra_questions[4],
+                              u'question.original': u''}}
+    answer = True
+    c.boolean_answer(context, answer)
+    c.save()
+    response = c.get_response()
+    del c
+    del context
+    del answer
+    assert set(response.keys()) == {'source', 'contextOut', 'followupEvent'}
+    assert response['followupEvent'] == {'data': {'question': rcd.extra_questions[5]}, 'name': 'trigger-bool'}
+    assert response['contextOut'] == [{'lifespan': 20,
+                                       'name': 'currentacc',
+                                       'parameters': {'allegation': 'issue C', 'claim_id': claim_id3,
+                                                      'defence': 'Responsible Communication'}}]
+
+    # AI: There are a few questions to consider... Necessity?
+    # me: no
+    c = controller.Controller(conversation, def_response)
+    context = {u'lifespan': 19,
+              u'name': u'currentacc',
+              u'parameters': {u'allegation': u'issue C',
+                              u'answer': u'false',
+                              u'answer.original': u'',
+                              u'claim_id': float(claim_id3),
+                              u'defence': u'Responsible Communication',
+                              u'question': rcd.extra_questions[5],
+                              u'question.original': u''}}
+    answer = False
+    c.boolean_answer(context, answer)
+    c.save()
+    response = c.get_response()
+    del c
+    del context
+    del answer
+    assert set(response.keys()) == {'source', 'contextOut', 'followupEvent'}
+    assert response['followupEvent'] == {'data': {'question': rcd.extra_questions[6]}, 'name': 'trigger-bool'}
+    assert response['contextOut'] == [{'lifespan': 20,
+                                       'name': 'currentacc',
+                                       'parameters': {'allegation': 'issue C', 'claim_id': claim_id3,
+                                                      'defence': 'Responsible Communication'}}]
+
+    # AI: There are a few questions to consider... Reporting?
+    # me: skip
+    c = controller.Controller(conversation, def_response)
+    context = {u'lifespan': 19,
+              u'name': u'currentacc',
+              u'parameters': {u'allegation': u'issue C',
+                              u'answer': u'skip',
+                              u'answer.original': u'',
+                              u'claim_id': float(claim_id3),
+                              u'defence': u'Responsible Communication',
+                              u'question': rcd.extra_questions[6],
+                              u'question.original': u''}}
+    answer = 'skip'
+    c.boolean_answer(context, answer)
+    c.save()
+    response = c.get_response()
+    del c
+    del context
+    del answer
+    assert set(response.keys()) == {'source', 'contextOut', 'followupEvent'}
+    assert response['followupEvent'] == {'data': {}, 'name': 'trigger-facts'}
+    assert response['contextOut'] == [{'lifespan': 20,
+                                       'name': 'currentacc',
+                                       'parameters': {'allegation': 'issue C', 'claim_id': claim_id3,
+                                                      'defence': 'Responsible Communication'}}]
+
+    # done facts
+    c = controller.Controller(conversation, def_response)
+    c.done_facts({'parameters': {'claim_id': float(claim_id3), 'defence': 'Responsible Communication'}})
+    response = c.get_response()
+    del c
     assert set(response.keys()) == {'source', 'followupEvent'}
     assert response['followupEvent'] == {'data': {}, 'name': 'trigger-summary'}
 
@@ -446,5 +616,3 @@ def test_everything():
     assert set(response.keys()) == {'source', 'speech', 'displayText'}
     assert response['speech'] == response['displayText']
     assert response['speech'].count("Download") == 2
-
-

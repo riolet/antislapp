@@ -293,7 +293,7 @@ def test_resp_comm():
         'allegation': 'issue A',
         'defence': 'Responsible Communication',
         'next_step': 'facts',
-        'data': {'defence': 'Responsible Communication'},
+        'data': {},
     }
     assert d1.get_next_step() == expected
     rc = d1.get_defence(ac1, 'Responsible Communication')

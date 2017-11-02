@@ -105,7 +105,6 @@ class ResponsibleDefence(BaseDefence):
     def import_state(self, data):
         BaseDefence.import_state(self, data)
         self.extra_answers = data.get('extra_answers', [None] * len(self.extra_questions))
-        print("importing: extra_answers is now {}".format(self.extra_answers))
 
     def export_state(self):
         data = BaseDefence.export_state(self)
@@ -135,7 +134,7 @@ class ResponsibleDefence(BaseDefence):
         elif self.applicable is True and None not in self.extra_answers and self.facts_done is not True:
             next_step = {
                 'next_step': 'facts',
-                'data': {'defence': self.name}
+                'data': {}
             }
         return next_step
 
