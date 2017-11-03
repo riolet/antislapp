@@ -23,6 +23,7 @@ class RTF:
         if self.written:
             raise IOError("File already written and closed.")
         s = s.replace("\n", "\\line\n")
+        s = s.replace("\t", "\\tab ")
         self.contents.append(s + "\\line\n")
 
     def set_path(self, path):
