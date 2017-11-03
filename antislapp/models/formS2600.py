@@ -160,3 +160,8 @@ class FormS2600:
         if not os.path.exists(os.path.dirname(self.path)):
             os.makedirs(os.path.dirname(self.path))
         self.writer.write()
+
+    def get_link(self):
+        path = self.path
+        i = path.find("/static")
+        return path[i:]
