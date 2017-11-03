@@ -53,8 +53,8 @@ class FormS2600:
         field = self.writer.underline(" "*60)
         lines = ["\nDefendant's address for service:\t\t" + field,
                  "\t\t\t\t\t\t" + field,
-                 "\nFax number address for service (if any):\t" + (self.fax_number or "None"),
-                 "\nE-mail address for service (if any):\t\t" + (self.email or "None"),
+                 "\nFax number address for service (if any):\t" + field,
+                 "\nE-mail address for service (if any):\t\t" + field,
                  "\n\n\nDate:\t" + self.date + "\t\t\t" + field,
                  "\t\t\t\t\t\t" + "Signature of defendant " + self.defendant]
         return '\n'.join(lines)
