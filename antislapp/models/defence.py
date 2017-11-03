@@ -397,13 +397,13 @@ class Defence:
                 return next_step
         # done iterating over claims, now for general questions
         if 'is_defamatory' not in self.data:
-            next_step = {'next_step': 'check-defamatory'}
+            next_step = {'next_step': 'check-defamatory', 'claim_id': -1, 'allegation': ''}
             return next_step
         elif 'is_damaging' not in self.data:
-            next_step = {'next_step': 'check-damaging'}
+            next_step = {'next_step': 'check-damaging', 'claim_id': -1, 'allegation': ''}
             return next_step
         elif 'apology' not in self.data:
-            next_step = {'next_step': 'check-apology'}
+            next_step = {'next_step': 'check-apology', 'claim_id': -1, 'allegation': ''}
             return next_step
 
     def report(self):
