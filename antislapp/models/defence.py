@@ -3,6 +3,7 @@ import time
 import traceback
 import cPickle
 import web
+from datetime import datetime
 from antislapp import index
 
 # data looks like:
@@ -252,6 +253,11 @@ class Defence:
             self.data['plaintiff'] = name
 
     def set_apology(self, happened, date, method):
+        try:
+            date = datetime.strptime(date, "%Y-%m-%d").strftime("%B %d, %Y")
+        except:
+            pass
+
         self.data['apology'] = {
             'applicable': happened,
             'date': date,
