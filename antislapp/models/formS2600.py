@@ -25,6 +25,9 @@ class FormS2600:
         self.apology_method = ''
         self.facts = []
 
+    def set_facts(self, facts):
+        self.facts = facts
+
     @staticmethod
     def numbered_paragraph(n, p):
         p = "{}. {}\n".format(n, p)
