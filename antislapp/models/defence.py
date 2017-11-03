@@ -251,6 +251,19 @@ class Defence:
         if len(name) > 0:
             self.data['plaintiff'] = name
 
+    def set_apology(self, happened, date, method):
+        self.data['apology'] = {
+            'applicable': happened,
+            'date': date,
+            'method': method
+        }
+
+    def set_defamatory(self, is_defamatory):
+        self.data['is_defamatory'] = is_defamatory
+
+    def set_damaging(self, is_damaging):
+        self.data['is_damaging'] = is_damaging
+
     def add_allegation(self, allegation, paragraph):
         self.data['claims'].append({
             'allegation': allegation,
@@ -382,6 +395,16 @@ class Defence:
                     'data': def_ns.get('data', {}),
                 }
                 return next_step
+        # done iterating over claims, now for general questions
+        if 'is_defamatory' not in self.data:
+            next_step = {'next_step': 'check-defamatory'}
+            return next_step
+        elif 'is_damaging' not in self.data:
+            next_step = {'next_step': 'check-damaging'}
+            return next_step
+        elif 'apology' not in self.data:
+            next_step = {'next_step': 'check-apology'}
+            return next_step
 
     def report(self):
         if self.get_sued() is None:

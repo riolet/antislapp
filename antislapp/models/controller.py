@@ -1,7 +1,7 @@
 import re
 from antislapp import index
 from antislapp.models.defence import Defence
-from antislapp.models.form18a import Form18A
+from antislapp.models.formS2600 import FormS2600
 from antislapp.models.suitsteps import SuitSteps
 from antislapp.models.definitions import definitions
 
@@ -30,6 +30,9 @@ class Controller:
             'Qualified Privilege': 'trigger-qualified',
             'Fair Comment': 'trigger-fair',
             'Responsible Communication': 'trigger-responsible',
+            'check-defamatory': 'trigger-defamatory',
+            'check-damaging': 'trigger-damaging',
+            'check-apology': 'trigger-apology',
         }
 
     def set_sued(self, sued, plaintiff):
@@ -90,6 +93,18 @@ class Controller:
         self.defence.done_facts(cid, defence)
         self.set_next_step()
 
+    def set_damaging(self, damaging):
+        self.defence.set_damaging(damaging)
+        self.set_next_step()
+
+    def set_defamatory(self, defamatory):
+        self.defence.set_defamatory(defamatory)
+        self.set_next_step()
+
+    def set_apology(self, params):
+        self.defence.set_apology(params['happened'], params['date'], params['method'])
+        self.set_next_step()
+
     def add_fact(self, context, fact):
         cid = int(float(context['parameters']['claim_id']))
         defence = context['parameters']['defence']
@@ -108,15 +123,21 @@ class Controller:
 
     def report(self):
         report = self.defence.report()
-        form = Form18A(self.cid)
+        form = FormS2600(self.cid)
 
         if self.defence.get_defendant() is not None:
-            form.set_defendant(self.defence.get_defendant())
+            form.defendant = self.defence.get_defendant()
         if self.defence.get_plaintiff() is not None:
-            form.set_plaintiff(self.defence.get_plaintiff())
-        form.set_unanswered(self.defence.get_withheld())
-        form.set_denials(self.defence.get_denied())
-        form.set_admissions(self.defence.get_agreed())
+            form.plaintiff = self.defence.get_plaintiff()
+        form.claims_unanswered = self.defence.get_withheld()
+        form.claims_denied = self.defence.get_denied()
+        form.claims_admitted = self.defence.get_agreed()
+        if 'apology' in self.defence.data and self.defence.data['apology']['applicable'] == True:
+            form.apology_given = True
+            form.apology_date = self.defence.data['apology']['date']
+            form.apology_method = self.defence.data['apology']['method']
+        form.was_damaging = self.defence.data.get('is_damaging', None)
+        form.was_defamatory = self.defence.data.get('is_defamatory', None)
 
         fact_paragraphs = []
         claims = self.defence.get_claims()

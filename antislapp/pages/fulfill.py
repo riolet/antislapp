@@ -108,6 +108,12 @@ class Fulfill:
             controller.add_fact(request['contexts']['currentacc'], request['params']['fact'])
         elif action == 'done_facts':
             controller.done_facts(request['contexts']['currentacc'])
+        elif action == 'got_defamatory':
+            controller.set_defamatory(request['params']['defamatory'])
+        elif action == 'got_damaging':
+            controller.set_damaging(request['params']['damaging'])
+        elif action == 'got_apology':
+            controller.set_apology(request['params'])
         elif action == 'report':
             controller.report()
         elif action == 'clear_all':
