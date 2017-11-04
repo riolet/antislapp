@@ -57,20 +57,16 @@ class Controller:
         if next_step is None:
             self.response['followupEvent'] = {'name': 'trigger-summary', 'data': {}}
         else:
-            params = {
-                'claim_id': next_step['claim_id'],
-                'allegation': next_step['allegation']
-            }
-            if 'defence' in next_step:
-                params['defence'] = next_step['defence']
+            data = next_step.pop('data', {})
+            step = next_step.pop('next_step', 'report')
             self.response['contextOut'] = [{
                 'name': 'currentacc',
                 'lifespan': 20,
-                'parameters': params
+                'parameters': next_step
             }]
             self.response['followupEvent'] = {
-                'name': self.defence_triggers[next_step['next_step']],
-                'data': next_step.get('data', {})
+                'name': self.defence_triggers[step],
+                'data': data
             }
         self.response.pop('speech', None)  # required to be absent
         self.response.pop('displayText', None)  # required to be absent

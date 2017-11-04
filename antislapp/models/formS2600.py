@@ -106,6 +106,7 @@ class FormS2600:
             lines.append(self.numbered_paragraph(next(p_num), not_alternative + "if the defendant {} made any statements about the plaintiff, those statements were not capable of being defamatory of the plaintiff, and were not in fact defamatory of the plaintiff, as alleged or at all.".format(self.defendant)))
             in_the_alternative = True
 
+
         # TODO: list defences sequentially. use "Further, and in the alternative, ..." to start.
 
         if self.was_damaging is False:
