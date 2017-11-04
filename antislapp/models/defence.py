@@ -34,19 +34,23 @@ class BaseDefence:
         self.applicable = None
         self.facts_done = False
         self.facts = []
+        self.extra_questions = []
+        self.extra_answers = [None] * len(self.extra_questions)
         self.import_state(state)
 
     def import_state(self, data):
         self.applicable = data.get('applicable', None)
         self.facts_done = data.get('facts_done', False)
         self.facts = data.get('facts', [])
+        self.extra_answers = data.get('extra_answers', [None] * len(self.extra_questions))
 
     def export_state(self):
         data = {
             'name': self.name,
             'applicable': self.applicable,
             'facts_done': self.facts_done,
-            'facts': [str(fact) for fact in self.facts]
+            'facts': [str(fact) for fact in self.facts],
+            'extra_answers': self.extra_answers,
         }
         return data
 
@@ -91,6 +95,7 @@ class FairCommentDefence(BaseDefence):
 
 class ResponsibleDefence(BaseDefence):
     def __init__(self, state):
+        BaseDefence.__init__(self, 'Responsible Communication', state)
         self.extra_questions = [
             "There are a few questions to consider with the responsible communication defence. You don't need to answer yes to all of them, but should agree with more than not.\n\nDid your effort to research and verify your words match the seriousness of the allegation?",
             "Did your diligence also match the public importance of the matter? for example national security should be treated more seriously than everyday politics.",
@@ -100,17 +105,8 @@ class ResponsibleDefence(BaseDefence):
             "Was the defamatory statement's inclusion justifiable?",
             "Was the point that a defamatory statement had been made, rather than that it was fact? Like reporting on a heated exchange between politicians. This can be a defence if the statement can be attributed, you indicated it wasn't verified, both sides were fairly reported, and the context was clear."
         ]
-        self.extra_answers = [None] * len(self.extra_questions)
-        BaseDefence.__init__(self, 'Responsible Communication', state)
-
-    def import_state(self, data):
-        BaseDefence.import_state(self, data)
-        self.extra_answers = data.get('extra_answers', [None] * len(self.extra_questions))
-
-    def export_state(self):
-        data = BaseDefence.export_state(self)
-        data['extra_answers'] = self.extra_answers
-        return data
+        if len(self.extra_answers) != len(self.extra_questions):
+            self.extra_answers = [None] * len(self.extra_questions)
 
     def next_step(self):
         next_step = None
