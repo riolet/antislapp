@@ -130,7 +130,7 @@ class Controller:
         form.was_defamatory = self.defence.data.get('is_defamatory', None)
 
         defences = self.defence.get_defences()
-        defence_paragraphs = [d.report() for d in defences if d.applicable]
+        defence_paragraphs = [d.report() for d in defences.values() if d.applicable]
         form.set_defences(defence_paragraphs)
 
         fact_paragraphs = []
