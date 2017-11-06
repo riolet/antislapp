@@ -1,4 +1,3 @@
-import re
 from antislapp import index
 from antislapp.models.defence import Defence
 from antislapp.models.formS2600 import FormS2600
@@ -78,15 +77,17 @@ class Controller:
         self.set_next_step()
 
     def defence_check(self, context, params):
-        cid = int(float(context['parameters']['claim_id']))
         defence = context['parameters']['defence']
-        self.defence.add_defence(cid, defence, params['applicable'])
+        self.defence.add_defence(defence, params['applicable'])
         self.set_next_step()
 
-    def done_facts(self, context):
-        cid = int(float(context['parameters']['claim_id']))
+    def add_fact(self, context, fact):
         defence = context['parameters']['defence']
-        self.defence.done_facts(cid, defence)
+        self.defence.add_fact(defence, fact)
+
+    def done_facts(self, context):
+        defence = context['parameters']['defence']
+        self.defence.done_facts(defence)
         self.set_next_step()
 
     def set_damaging(self, damaging):
@@ -101,20 +102,13 @@ class Controller:
         self.defence.set_apology(params['happened'], params['date'], params['method'])
         self.set_next_step()
 
-    def add_fact(self, context, fact):
-        cid = int(float(context['parameters']['claim_id']))
-        defence = context['parameters']['defence']
-        self.defence.add_fact(cid, defence, fact)
-        #self.set_next_step()
-
     def boolean_answer(self, context, answer):
-        cid = int(float(context['parameters']['claim_id']))
         defence = context['parameters']['defence']
         info = {
             'question': context['parameters']['question'],
             'answer': answer
         }
-        self.defence.update_defence(cid, defence, info)
+        self.defence.update_defence(defence, info)
         self.set_next_step()
 
     def report(self):
@@ -128,31 +122,21 @@ class Controller:
         form.claims_unanswered = self.defence.get_withheld()
         form.claims_denied = self.defence.get_denied()
         form.claims_admitted = self.defence.get_agreed()
-        if 'apology' in self.defence.data and self.defence.data['apology']['applicable'] == True:
+        if 'apology' in self.defence.data and self.defence.data['apology']['applicable'] is True:
             form.apology_given = True
             form.apology_date = self.defence.data['apology']['date']
             form.apology_method = self.defence.data['apology']['method']
         form.was_damaging = self.defence.data.get('is_damaging', None)
         form.was_defamatory = self.defence.data.get('is_defamatory', None)
 
+        defences = self.defence.get_defences()
+        defence_paragraphs = [d.report() for d in defences if d.applicable]
+        form.set_defences(defence_paragraphs)
+
         fact_paragraphs = []
-        claims = self.defence.get_claims()
-        for i, claim in enumerate(claims):
-            if claim['plead'] != 'deny':
-                continue
+        form.set_additional_facts(fact_paragraphs)
 
-            for defence in Defence.DEFENCES:
-                if defence in claim and claim[defence].applicable:
-                    for fact in claim[defence].facts:
-                        p_number = claim['paragraph']
-                        fact = re.sub(r'\bme\b', 'the defendant', fact)
-                        fact = re.sub(r"\b[Ii]('m|\sam)\b", 'the defendant is', fact)
-                        fact = re.sub(r'\b[Ii]\b', 'the defendant', fact)
-                        p = 'With respect to allegations in paragraph {}, the defendant claims {}'.format(p_number, fact)
-                        fact_paragraphs.append(p)
-        form.set_facts(fact_paragraphs)
         form.write()
-
         report = report + "\n\nDownload your Statement of Defence " \
                           "[{}{}](here).".format(self.domain, form.get_link())
 

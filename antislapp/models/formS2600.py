@@ -23,10 +23,14 @@ class FormS2600:
         self.apology_given = None
         self.apology_date = ''
         self.apology_method = ''
-        self.facts = []
+        self.additional_facts = []
+        self.defence_paragraphs = []
 
-    def set_facts(self, facts):
-        self.facts = facts
+    def set_additional_facts(self, fact_paragraphs):
+        self.additional_facts = fact_paragraphs
+
+    def set_defences(self, paragraphs):
+        self.defence_paragraphs = paragraphs
 
     @staticmethod
     def numbered_paragraph(n, p):
@@ -106,20 +110,27 @@ class FormS2600:
             lines.append(self.numbered_paragraph(next(p_num), not_alternative + "if the defendant {} made any statements about the plaintiff, those statements were not capable of being defamatory of the plaintiff, and were not in fact defamatory of the plaintiff, as alleged or at all.".format(self.defendant)))
             in_the_alternative = True
 
-
-        # TODO: list defences sequentially. use "Further, and in the alternative, ..." to start.
+        for p_def in self.defence_paragraphs:
+            if in_the_alternative:
+                lines.append(self.numbered_paragraph(next(p_num), alternative + p_def))
+            else:
+                lines.append(self.numbered_paragraph(next(p_num), not_alternative + p_def))
+            in_the_alternative = True
 
         if self.was_damaging is False:
             if in_the_alternative:
                 lines.append(self.numbered_paragraph(next(p_num), alternative + "the defendant {} expressly denies that the plaintiff has suffered injury, loss, or damage as alleged or at all.".format(self.defendant)))
 
-        if self.apology_given is True:
+        if self.apology_given is True or len(self.additional_facts) > 0:
             lines.append(self.writer.bold("Division 3 -- Additional Facts\n"))
             if self.was_damaging is False:
                 deny = "which is not admitted but expressly denied, "
             else:
                 deny = ""
             lines.append(self.numbered_paragraph(next(p_num), alternative + "if the plaintiff has suffered injury, loss, or damage as alleged or at all, {}the defendant {} made a full and fair apology on {} by way of {}.".format(deny, self.defendant, self.apology_date, self.apology_method)))
+
+            for p_fact in self.additional_facts:
+                lines.append(self.numbered_paragraph(next(p_num), alternative + p_fact))
 
         return '\n'.join(lines)
 

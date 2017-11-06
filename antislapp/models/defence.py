@@ -13,12 +13,6 @@ from antislapp import index
 #       {allegation: blah blah X
 #       paragraph: "4"
 #       plead: agree/deny/withhold
-#       TruthDefence:
-#           valid: true/false
-#           facts: ['facts1', 'facts2']
-#       AbsoluteDefence:
-#           valid: ...
-#           facts: [...]
 #       ...
 #       },
 #       {allegation: blah blah Y
@@ -26,6 +20,17 @@ from antislapp import index
 #       },
 #       {allegation: blah blah Z
 #       ...}
+#   defences = {
+#       TruthDefence:
+#           valid: true/false
+#           facts: ['facts1', 'facts2']
+#           extra_questions/answers: [...]
+#       AbsoluteDefence:
+#           valid: ...
+#           facts: [...]
+#           extra_questions/answers: [...]
+#       ...
+#   }
 
 
 class BaseDefence:
@@ -56,10 +61,23 @@ class BaseDefence:
 
     def next_step(self):
         next_step = None
+        # Ask if this defence might apply
         if self.applicable is None:
             next_step = {
                 'next_step': self.name
             }
+
+        # Ask any extra questions relevant to this defence
+        elif self.applicable is True and None in self.extra_answers:
+            for i, ans in enumerate(self.extra_answers):
+                if ans is None:
+                    next_step = {
+                        'next_step': 'question',
+                        'data': {'question': self.extra_questions[i]}
+                    }
+                    return next_step
+
+        # Collect any additional relevant facts
         elif self.applicable is True and self.facts_done is not True:
             next_step = {
                 'next_step': 'facts',
@@ -69,28 +87,85 @@ class BaseDefence:
     def add_fact(self, fact):
         self.facts.append(fact)
 
+    def determine_eligibility(self):
+        # only update 'applicable' if all extra_questions have been answered
+        if None not in self.extra_answers:
+            count_yes = self.extra_answers.count(True)
+            count_no = self.extra_answers.count(False)
+            if count_yes > 0 and count_yes > count_no:
+                self.applicable = True
+            else:
+                self.applicable = False
+
+    def submit_extra_answer(self, question, answer):
+        # params should include keys 'question' and 'answer'
+        # 'answer' should be one of True, False, 'skip'
+
+        # update the question list.
+        q_index = self.extra_questions.index(question)
+        self.extra_answers[q_index] = answer
+
+        # if done, check if that changes anything.
+        self.determine_eligibility()
+
     def update(self, params):
+        # placeholder for future extension
         pass
+
+    def report(self):
+        raise NotImplementedError
 
 
 class TruthDefence(BaseDefence):
     def __init__(self, state):
         BaseDefence.__init__(self, 'Truth', state)
+        self.extra_questions = [
+            'Were your statements based information from reliable sources?'
+        ]
+        if len(self.extra_answers) != len(self.extra_questions):
+            self.extra_answers = [None] * len(self.extra_questions)
+
+    def report(self):
+        return "the defendant pleads Truth."
 
 
 class AbsoluteDefence(BaseDefence):
     def __init__(self, state):
         BaseDefence.__init__(self, 'Absolute Privilege', state)
+        self.extra_questions = [
+            'Were your in a courtroom when you made the statement?'
+        ]
+        if len(self.extra_answers) != len(self.extra_questions):
+            self.extra_answers = [None] * len(self.extra_questions)
+
+    def report(self):
+        return "the defendant pleads Absolute Privilege."
 
 
 class QualifiedDefence(BaseDefence):
     def __init__(self, state):
         BaseDefence.__init__(self, 'Qualified Privilege', state)
+        self.extra_questions = [
+            'Was your statement prompted by a request from someone who needed to know?'
+        ]
+        if len(self.extra_answers) != len(self.extra_questions):
+            self.extra_answers = [None] * len(self.extra_questions)
+
+    def report(self):
+        return "the defendant pleads Qualified Privilege."
 
 
 class FairCommentDefence(BaseDefence):
     def __init__(self, state):
         BaseDefence.__init__(self, 'Fair Comment', state)
+        self.extra_questions = [
+            'Were your statements deliberately malicious?'
+        ]
+        if len(self.extra_answers) != len(self.extra_questions):
+            self.extra_answers = [None] * len(self.extra_questions)
+
+    def report(self):
+        return "the defendant pleads Fair Comment."
 
 
 class ResponsibleDefence(BaseDefence):
@@ -108,51 +183,8 @@ class ResponsibleDefence(BaseDefence):
         if len(self.extra_answers) != len(self.extra_questions):
             self.extra_answers = [None] * len(self.extra_questions)
 
-    def next_step(self):
-        next_step = None
-
-        # if it hasn't been checked, check for applicability of this defence
-        if self.applicable is None:
-            next_step = {
-                'next_step': self.name
-            }
-
-        # if this is applicable, ask any additional questions to verify.
-        elif self.applicable is True and None in self.extra_answers:
-            for i, ans in enumerate(self.extra_answers):
-                if ans is None:
-                    next_step = {
-                        'next_step': 'question',
-                        'data': {'question': self.extra_questions[i]}
-                    }
-                    return next_step
-
-        # if this is applicable, and the special question was true, get the facts.
-        elif self.applicable is True and None not in self.extra_answers and self.facts_done is not True:
-            next_step = {
-                'next_step': 'facts',
-                'data': {}
-            }
-        return next_step
-
-    def update(self, params):
-        # params should include keys 'question' and 'answer'
-        # 'answer' should be one of True, False, 'skip'
-
-        # update the question list.
-        question = params['question']
-        answer = params['answer']
-        index = self.extra_questions.index(question)
-        self.extra_answers[index] = answer
-
-        # if done, check if that changes anything.
-        if None not in self.extra_answers:
-            count_yes = self.extra_answers.count(True)
-            count_no = self.extra_answers.count(False)
-            if count_yes > 0 and count_yes > count_no:
-                self.applicable = True
-            else:
-                self.applicable = False
+    def report(self):
+        return "the defendant pleads Responsible Communication."
 
 
 def defence_ctor(state):
@@ -186,7 +218,8 @@ class Defence:
             'sued': None,
             'defendant': None,
             'plaintiff': None,
-            'claims': []
+            'claims': [],
+            'defences': {},
         }
 
     def load(self):
@@ -285,39 +318,34 @@ class Defence:
             raise ValueError("Plead must be one of {}".format(Defence.PLEADS))
         context['plead'] = plead
 
-    def add_defence(self, claim_id, defence, applicable):
-        # Raises IndexError if claim_id is missing.
+    def add_defence(self, defence, applicable):
         # Raises ValueError if defence isn't one of Defence.DEFENCES
         # Casts applicable to bool.
-        context = self.data['claims'][claim_id]
+        defences = self.data['defences']
         if defence not in Defence.DEFENCES:
             raise ValueError("Defence must be one of {}".format(Defence.DEFENCES))
 
-        context[defence] = defence_ctor({'name': defence})
-        context[defence].applicable = bool(applicable)
+        defences[defence] = defence_ctor({'name': defence})
+        defences[defence].applicable = bool(applicable)
 
-    def get_defence(self, claim_id, defence):
-        context = self.data['claims'][claim_id]
-        return context.get(defence, None)
+    def get_defences(self):
+        return self.data.get('defences', {})
 
-    def update_defence(self, claim_id, defence, params):
-        context = self.data['claims'][claim_id]
-        defence_model = context[defence]
+    def update_defence(self, defence, params):
+        defence_model = self.data['defences'][defence]
+        if 'question' in params and 'answer' in params:
+            defence.submit_extra_answer(params['question'], params['answer'])
         defence_model.update(params)
 
-    def add_fact(self, claim_id, defence, fact):
-        # Raises IndexError on missing claim_id
-        # Raises ValueError if defence has not been pleaded.
-        context = self.data['claims'][claim_id]
-        if defence not in context:
-            raise ValueError
-        context[defence].add_fact(fact)
+    def add_fact(self, defence, fact):
+        # Raises IndexError on missing defence
+        defence_model = self.data['defences'][defence]
+        defence_model.add_fact(fact)
 
-    def done_facts(self, claim_id, defence):
-        context = self.data['claims'][claim_id]
-        if defence not in context:
-            raise ValueError
-        context[defence].facts_done = True
+    def done_facts(self, defence):
+        # Raises IndexError on missing defence
+        defence_model = self.data['defences'][defence]
+        defence_model.facts_done = True
 
     def get_agreed(self):
         agreed = []
@@ -353,6 +381,7 @@ class Defence:
             defence: ""  # optional
             data: {}  # optional
         """
+        # plead all claims first.
         for claim_id, claim in enumerate(self.data['claims']):
             # Every claim needs to be pleaded one way or another.
             if claim['plead'] is None:
@@ -365,39 +394,42 @@ class Defence:
             # Only claims that are denied have followup questions
             if claim['plead'] != 'deny':
                 continue
-            # Inquire about each possible defence.
-            for defence in Defence.DEFENCES:
-                d = claim.get(defence, None)
 
-                # This defence hasn't been brought up yet.
-                if d is None:
-                    next_step = {
-                        'claim_id': claim_id,
-                        'allegation': claim['allegation'],
-                        'next_step': defence,
-                        'defence': defence,
-                    }
-                    return next_step
+        # Inquire about each possible defence.
+        denied_paragraphs_list = [str(claim['paragraph']) for claim in self.get_denied()]
+        denied_paragraphs = index.join_list(denied_paragraphs_list)
+        for defence in Defence.DEFENCES:
+            defences = self.get_defences()
+            d = defences.get(defence, None)
 
-                # What to do if d isn't a BaseDefence instance?
-                # if not isinstance(d, BaseDefence):
-                #    del claim[defence]
-                assert isinstance(d, BaseDefence)
-
-                # If this defence is fully explored, move on.
-                def_ns = d.next_step()
-                if def_ns is None:
-                    continue
-
+            # This defence hasn't been brought up yet.
+            if d is None:
                 next_step = {
-                    'claim_id': claim_id,
-                    'allegation': claim['allegation'],
-                    'next_step': def_ns['next_step'],
+                    'paragraphs': denied_paragraphs,
+                    'next_step': defence,
                     'defence': defence,
-                    'data': def_ns.get('data', {}),
                 }
                 return next_step
-        # done iterating over claims, now for general questions
+
+            # What to do if d isn't a BaseDefence instance?
+            # if not isinstance(d, BaseDefence):
+            #    del claim[defence]
+            assert isinstance(d, BaseDefence)
+
+            # If this defence is fully explored, move on.
+            def_ns = d.next_step()
+            if def_ns is None:
+                continue
+
+            next_step = {
+                'paragraphs': denied_paragraphs,
+                'next_step': def_ns['next_step'],
+                'defence': defence,
+                'data': def_ns.get('data', {}),
+            }
+            return next_step
+
+        # done iterating over claims and defences, now for general questions
         if 'is_defamatory' not in self.data:
             next_step = {'next_step': 'check-defamatory'}
             return next_step
