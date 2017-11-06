@@ -109,8 +109,8 @@ class BaseDefence:
         self.determine_eligibility()
 
     def update(self, params):
-        # placeholder for future extension
-        pass
+        if 'question' in params and 'answer' in params:
+            self.submit_extra_answer(params['question'], params['answer'])
 
     def report(self):
         raise NotImplementedError
@@ -333,8 +333,6 @@ class Defence:
 
     def update_defence(self, defence, params):
         defence_model = self.data['defences'][defence]
-        if 'question' in params and 'answer' in params:
-            defence.submit_extra_answer(params['question'], params['answer'])
         defence_model.update(params)
 
     def add_fact(self, defence, fact):
