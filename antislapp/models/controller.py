@@ -142,8 +142,9 @@ class Controller:
         defence_paragraphs = []
         fact_paragraphs = []
         for defence in Defence.DEFENCES:
-            defence_paragraphs.append(defences[defence].report())
-            fact_paragraphs.extend(defences[defence].facts)
+            if defences[defence].applicable is True:
+                defence_paragraphs.append(defences[defence].report())
+                fact_paragraphs.extend(defences[defence].facts)
         form.set_defences(defence_paragraphs)
         form.set_additional_facts(fact_paragraphs)
 
