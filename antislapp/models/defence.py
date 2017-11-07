@@ -89,13 +89,12 @@ class BaseDefence:
 
     def determine_eligibility(self):
         # only update 'applicable' if all extra_questions have been answered
-        if None not in self.extra_answers:
-            count_yes = self.extra_answers.count(True)
-            count_no = self.extra_answers.count(False)
-            if count_yes > 0 and count_yes > count_no:
-                self.applicable = True
-            else:
-                self.applicable = False
+        if None in self.extra_answers:
+            return
+
+        count_yes = self.extra_answers.count(True)
+        count_no = self.extra_answers.count(False)
+        self.applicable = count_yes > 0 and count_yes > count_no
 
     def submit_extra_answer(self, question, answer):
         # params should include keys 'question' and 'answer'
@@ -120,52 +119,109 @@ class TruthDefence(BaseDefence):
     def __init__(self, state):
         BaseDefence.__init__(self, 'Truth', state)
         self.extra_questions = [
-            'Were your statements based information from reliable sources?'
+            'So everything you stated was fact, or can be proven by facts?',
+            'Were your statements based on information from reliable sources?',
+            'Do you have evidence or witnesses you can use to prove this claim?',
         ]
         if len(self.extra_answers) != len(self.extra_questions):
             self.extra_answers = [None] * len(self.extra_questions)
 
+    def determine_eligibility(self):
+        if None in self.extra_answers:
+            return
+
+        # if Q1 is True and at least one of Q2/Q3 are true.
+        count_yes = self.extra_answers.count(True)
+        self.applicable = count_yes >= 2 and self.extra_answers[0] is True
+
     def report(self):
-        return "the defendant pleads Truth."
+        report = ""
+        if self.extra_answers[0] is True:
+            report += "the defendant's statements was a statement of provable fact, and "
+        if self.extra_answers[1] is True:
+            report += "the facts used were based upon reliable sources, thus "
+        report += "any statements about the plaintiff were fully protected by the defence of truth or justification."
+        return report
 
 
 class AbsoluteDefence(BaseDefence):
     def __init__(self, state):
         BaseDefence.__init__(self, 'Absolute Privilege', state)
         self.extra_questions = [
-            'Were your in a courtroom when you made the statement?'
+            'Were you participating in a judicial proceeding or speaking before a legislative assemble when you made your statements? In other words, were you in court?'
+            'Were you asked to make a statement or testify?',
+            'Did you make these statements to a reporter or someone not involved in the case?'
         ]
         if len(self.extra_answers) != len(self.extra_questions):
             self.extra_answers = [None] * len(self.extra_questions)
 
+    def determine_eligibility(self):
+        if None in self.extra_answers:
+            return
+
+        # if Q1 is True and at least one of Q2/Q3 are true.
+        count_yes = 0
+        count_no = 0
+        if self.extra_answers[1] is True:
+            count_yes += 1
+        elif self.extra_answers[1] is False:
+            count_no += 1
+        if self.extra_answers[2] is False:
+            count_yes += 1
+        elif self.extra_answers[2] is True:
+            count_no += 1
+
+        self.applicable = self.extra_answers[0] is True and count_yes > 0
+
     def report(self):
-        return "the defendant pleads Absolute Privilege."
+        return "any statements about the plaintiff were fully protected by the defence of absolute privilege."
 
 
 class QualifiedDefence(BaseDefence):
     def __init__(self, state):
         BaseDefence.__init__(self, 'Qualified Privilege', state)
         self.extra_questions = [
-            'Was your statement prompted by a request from someone who needed to know?'
+            'Did you have a duty--legal, social, or moral--to make the statement(s) in question? e.g. you were asked to give your recommendation of a past employee.',
+            'Did you make your statements without malice? e.g. Did you honestly believe in the truth of your statement?',
+            'Did you only make your statement to the people who needed to hear it?',
         ]
         if len(self.extra_answers) != len(self.extra_questions):
             self.extra_answers = [None] * len(self.extra_questions)
 
     def report(self):
-        return "the defendant pleads Qualified Privilege."
+        if self.extra_answers[0] and self.extra_answers[1]:
+            report = "the defendant was bound by legal, social, or moral duty to make their statement, and any statements made by the defendant were made without malice and are fully protected by the defence of qualified privilege."
+        elif self.extra_answers[0]:
+            report = "the defendant was bound by legal, social, or moral duty to make their statement, and any statements about the plaintiff were fully protected by the defence of qualified privilege."
+        else:
+            report = "any statements about the plaintiff were fully protected by the defence of qualified privilege."
+        return report
 
 
 class FairCommentDefence(BaseDefence):
     def __init__(self, state):
         BaseDefence.__init__(self, 'Fair Comment', state)
         self.extra_questions = [
-            'Were your statements deliberately malicious?'
+            'Were your words a comment/observation/opinion and would someone recognize your words as such?',
+            'Was your comment based on facts that were true, and was that apparent in the published material?',
+            'Could any person honestly express that opinion you made based on the facts?',
+            'Was the subject matter of your opinion of "public interest"?'
         ]
         if len(self.extra_answers) != len(self.extra_questions):
             self.extra_answers = [None] * len(self.extra_questions)
 
+    def determine_eligibility(self):
+        if None in self.extra_answers:
+            return
+
+        # if Q1 is True and at least one of Q2/Q3 are true.
+        count_yes = self.extra_answers.count(True) - 1
+        count_no = self.extra_answers.count(False)
+
+        self.applicable = self.extra_answers[0] is True and count_yes > count_no
+
     def report(self):
-        return "the defendant pleads Fair Comment."
+        return "any statements about the plaintiff were the defendant's opinion based solely on published facts, and are protected by the defence of fair comment"
 
 
 class ResponsibleDefence(BaseDefence):
@@ -184,7 +240,7 @@ class ResponsibleDefence(BaseDefence):
             self.extra_answers = [None] * len(self.extra_questions)
 
     def report(self):
-        return "the defendant pleads Responsible Communication."
+        return "the defendant's statements were made without malice on a matter of public interest on the basis of information from apparently reliable and qualified sources, and were protected by the defence of responsible communication."
 
 
 def defence_ctor(state):
