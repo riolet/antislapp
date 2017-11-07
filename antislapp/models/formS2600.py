@@ -123,12 +123,13 @@ class FormS2600:
 
         if self.apology_given is True or len(self.additional_facts) > 0:
             lines.append(self.writer.bold("Division 3 -- Additional Facts\n"))
+        if self.apology_given is True:
             if self.was_damaging is False:
                 deny = "which is not admitted but expressly denied, "
             else:
                 deny = ""
             lines.append(self.numbered_paragraph(next(p_num), alternative + "if the plaintiff has suffered injury, loss, or damage as alleged or at all, {}the defendant {} made a full and fair apology on {} by way of {}.".format(deny, self.defendant, self.apology_date, self.apology_method)))
-
+        if len(self.additional_facts) > 0:
             for p_fact in self.additional_facts:
                 lines.append(self.numbered_paragraph(next(p_num), "Further, " + p_fact))
 

@@ -133,6 +133,8 @@ class Controller:
             form.apology_given = True
             form.apology_date = self.defence.data['apology']['date']
             form.apology_method = self.defence.data['apology']['method']
+        else:
+            form.apology_given = False
         form.was_damaging = self.defence.data.get('is_damaging', None)
         form.was_defamatory = self.defence.data.get('is_defamatory', None)
 
