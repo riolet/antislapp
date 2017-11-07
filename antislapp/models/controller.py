@@ -32,6 +32,7 @@ class Controller:
             'check-defamatory': 'trigger-defamatory',
             'check-damaging': 'trigger-damaging',
             'check-apology': 'trigger-apology',
+            'check-court': 'trigger-court',
         }
 
     def set_sued(self, sued, plaintiff):
@@ -102,6 +103,10 @@ class Controller:
         self.defence.set_apology(params['happened'], params['date'], params['method'])
         self.set_next_step()
 
+    def set_court_name(self, court_name):
+        self.defence.set_court_name(court_name)
+        self.set_next_step()
+
     def boolean_answer(self, context, answer):
         defence = context['parameters']['defence']
         info = {
@@ -119,6 +124,8 @@ class Controller:
             form.defendant = self.defence.get_defendant()
         if self.defence.get_plaintiff() is not None:
             form.plaintiff = self.defence.get_plaintiff()
+        if self.defence.get_court_name() is not None:
+            form.court_name = self.defence.get_court_name()
         form.claims_unanswered = self.defence.get_withheld()
         form.claims_denied = self.defence.get_denied()
         form.claims_admitted = self.defence.get_agreed()

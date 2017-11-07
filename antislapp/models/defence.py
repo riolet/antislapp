@@ -203,9 +203,9 @@ class FairCommentDefence(BaseDefence):
         BaseDefence.__init__(self, 'Fair Comment', state)
         self.extra_questions = [
             'Were your words a comment/observation/opinion and would someone recognize your words as such?',
-            'Were your statements based on facts that were true, and were the facts apparent to your audience?',
+            'Were your statements based on facts that were true, and was this basis apparent to your audience?',
             'Could any person honestly express that opinion you made based on the facts?',
-            'Was the subject matter of your opinion of "public interest"?'
+            'Was the subject matter of your opinion of "public interest"?',
         ]
         if len(self.extra_answers) != len(self.extra_questions):
             self.extra_answers = [None] * len(self.extra_questions)
@@ -274,6 +274,7 @@ class Defence:
             'sued': None,
             'defendant': None,
             'plaintiff': None,
+            'courtName': None,
             'claims': [],
             'defences': {},
         }
@@ -336,6 +337,12 @@ class Defence:
     def set_plaintiff(self, name):
         if len(name) > 0:
             self.data['plaintiff'] = name
+
+    def get_court_name(self):
+        return self.data['courtName']
+
+    def set_court_name(self, court_name):
+        self.data['courtName'] = court_name
 
     def set_apology(self, happened, date, method):
         try:
@@ -492,6 +499,9 @@ class Defence:
             return next_step
         elif 'apology' not in self.data:
             next_step = {'next_step': 'check-apology'}
+            return next_step
+        elif self.data['courtName'] is None:
+            next_step = {'next_step': 'check-court'}
             return next_step
 
     def report(self):

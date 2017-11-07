@@ -114,6 +114,8 @@ class Fulfill:
             controller.set_damaging(request['params']['damaging'])
         elif action == 'got_apology':
             controller.set_apology(request['params'])
+        elif action == 'got_court':
+            controller.set_court_name(request['params']['court'])
         elif action == 'report':
             controller.report()
         elif action == 'clear_all':
