@@ -148,7 +148,7 @@ class AbsoluteDefence(BaseDefence):
     def __init__(self, state):
         BaseDefence.__init__(self, 'Absolute Privilege', state)
         self.extra_questions = [
-            'Were you participating in a judicial proceeding or speaking before a legislative assemble when you made your statements? In other words, were you in court?'
+            'Were you participating in a judicial proceeding or speaking before a legislative assemble when you made your statements? In other words, were you in court?',
             'Were you asked to make a statement or testify?',
             'Did you make these statements to a reporter or someone not involved in the case?'
         ]
