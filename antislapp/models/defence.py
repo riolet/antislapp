@@ -181,7 +181,7 @@ class QualifiedDefence(BaseDefence):
     def __init__(self, state):
         BaseDefence.__init__(self, 'Qualified Privilege', state)
         self.extra_questions = [
-            'Did you have a duty--legal, social, or moral--to make the statement(s) in question? e.g. you were asked to give your recommendation of a past employee.',
+            'Did you have a duty--legal, social, or moral--to make the statement(s) in question? e.g. answering police inquiries or communication between traders and credit agencies.',
             'Did you make your statements without malice? e.g. Did you honestly believe in the truth of your statement?',
             'Did you only make your statement to the people who needed to hear it?',
         ]
