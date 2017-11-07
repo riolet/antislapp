@@ -131,11 +131,11 @@ class Controller:
 
         defences = self.defence.get_defences()
         defence_paragraphs = []
+        fact_paragraphs = []
         for defence in Defence.DEFENCES:
             defence_paragraphs.append(defences[defence].report())
+            fact_paragraphs.extend(defences[defence].facts)
         form.set_defences(defence_paragraphs)
-
-        fact_paragraphs = []
         form.set_additional_facts(fact_paragraphs)
 
         form.write()
