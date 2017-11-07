@@ -203,7 +203,7 @@ class FairCommentDefence(BaseDefence):
         BaseDefence.__init__(self, 'Fair Comment', state)
         self.extra_questions = [
             'Were your words a comment/observation/opinion and would someone recognize your words as such?',
-            'Was your comment based on facts that were true, and was that apparent in the published material?',
+            'Were your statements based on facts that were true, and were the facts apparent to your audience?',
             'Could any person honestly express that opinion you made based on the facts?',
             'Was the subject matter of your opinion of "public interest"?'
         ]
@@ -228,7 +228,7 @@ class ResponsibleDefence(BaseDefence):
     def __init__(self, state):
         BaseDefence.__init__(self, 'Responsible Communication', state)
         self.extra_questions = [
-            "There are a few questions to consider with the responsible communication defence. You don't need to answer yes to all of them, but should agree with more than not.\n\nDid your effort to research and verify your words match the seriousness of the allegation?",
+            "Did your effort to research and verify your words match the seriousness of the allegation?",
             "Did your diligence also match the public importance of the matter? for example national security should be treated more seriously than everyday politics.",
             "Was the urgency to publish great enough that you couldn't afford a reasonable delay that would have detected the error?",
             "Did you consider the reliability of your sources? One must be more diligent if your sources are untrustworthy or biased.",
