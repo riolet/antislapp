@@ -1,3 +1,4 @@
+import re
 from antislapp import index
 from antislapp.models.defence import Defence
 from antislapp.models.formS2600 import FormS2600
@@ -118,9 +119,70 @@ class Controller:
         self.defence.update_defence(defence, info)
         self.set_next_step()
 
+    def get_missing_numbers(self, found_numbers):
+        numbers = []
+        for fnum in found_numbers:
+            if type(fnum) in (float, int):
+                numbers.append(int(fnum))
+                continue
+
+            numstrings = fnum.split(",")
+            for numstring in numstrings:
+                if numstring.strip().isdigit():
+                    numbers.append(int(numstring))
+                    continue
+                # ranges of form 1..3 or 1-3 with spaces anywhere
+                match = re.match(r'\s*(\d+)\s*(?:-+|\.\.+)\s*(\d+)\s*', numstring)
+                if match:
+                    a = int(match.group(1))
+                    b = int(match.group(2))
+                    numbers.extend(range(min(a, b), max(a, b) + 1))
+
+        highest = max(numbers)
+        missing = []
+        for i in range(1, highest):
+            if i not in numbers:
+                missing.append(i)
+        groups = self.group_ranges(missing)
+        return groups
+
+    def group_ranges(self, numbers):
+        # turns lists like [3,2,7,6,8] and [1,2,3,4,6,7,9,10]
+        # into lists like ['2-3', '6-8'] and ['1-4', '6-7', '9-10']
+        if len(numbers) == 0:
+            return []
+
+        nums = sorted(list(set(numbers)))
+
+        grouped_missing = []
+        prev = nums[0]
+        run = 0
+        for n in nums[1:]:
+            if n == prev + 1:
+                run += 1
+            else:
+                if run == 0:
+                    grouped_missing.append("{}".format(prev))
+                else:
+                    grouped_missing.append("{}-{}".format(prev - run, prev))
+                run = 0
+            prev = n
+        if run == 0:
+            grouped_missing.append("{}".format(prev))
+        else:
+            grouped_missing.append("{}-{}".format(prev - run, prev))
+        return grouped_missing
+
     def report(self):
         report = self.defence.report()
         form = FormS2600(self.cid)
+
+        # if any paragraphs are missing from the pleadings, mention them here
+        missing_paragraphs = self.get_missing_numbers([claim['paragraph'] for claim in self.defence.get_claims()])
+        if missing_paragraphs:
+            report += "\n\nSome paragraph numbers ({}) of allegations made seem to be missing. It is important that " \
+                      "all allegation paragraphs are accounted for in paragraphs ".format(
+                index.join_list(missing_paragraphs))
 
         if self.defence.get_defendant() is not None:
             form.defendant = self.defence.get_defendant()
