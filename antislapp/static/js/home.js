@@ -49,6 +49,7 @@ function send_post(destination, data, cb_success, cb_fail) {
     };
     dialog.add_ai_message = function (msg) {
         //<div class="msg-user">Hello</div>
+        msg = msg.replace(/\\n/g, "\n"); //newlines from literal "\n" pairs
         let bubble = document.createElement("DIV");
         bubble.className = "msg-ai";
         dialog.msg_into_element(bubble, msg);
