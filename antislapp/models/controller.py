@@ -8,7 +8,8 @@ from antislapp.models.definitions import definitions
 class Controller:
     def __init__(self, conversation_id, default_response):
         self.cid = conversation_id
-        self.domain = "https://riobot.centralus.cloudapp.azure.com"
+        # self.domain = "https://riobot.centralus.cloudapp.azure.com"
+        self.domain = "https://antislapp.ca"
         self.default = default_response
         self.defence = Defence(index.db, self.cid)
         self.response = {
