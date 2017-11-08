@@ -34,6 +34,7 @@ class Controller:
             'check-damaging': 'trigger-damaging',
             'check-apology': 'trigger-apology',
             'check-court': 'trigger-court',
+            'exit-deny': 'trigger-exit-deny',
         }
 
     def set_sued(self, sued, plaintiff):

@@ -458,38 +458,43 @@ class Defence:
 
         # Inquire about each possible defence.
         denied_paragraphs_list = [str(claim['paragraph']) for claim in self.get_denied()]
-        if len(denied_paragraphs_list) > 0:
-            denied_paragraphs = index.join_list(denied_paragraphs_list)
-            for defence in Defence.DEFENCES:
-                defences = self.get_defences()
-                d = defences.get(defence, None)
+        if len(denied_paragraphs_list) == 0:
+            next_step = {
+                'next_step': "exit-deny",
+            }
+            return next_step
 
-                # This defence hasn't been brought up yet.
-                if d is None:
-                    next_step = {
-                        'paragraphs': denied_paragraphs,
-                        'next_step': defence,
-                        'defence': defence,
-                    }
-                    return next_step
+        denied_paragraphs = index.join_list(denied_paragraphs_list)
+        for defence in Defence.DEFENCES:
+            defences = self.get_defences()
+            d = defences.get(defence, None)
 
-                # What to do if d isn't a BaseDefence instance?
-                # if not isinstance(d, BaseDefence):
-                #    del claim[defence]
-                assert isinstance(d, BaseDefence)
-
-                # If this defence is fully explored, move on.
-                def_ns = d.next_step()
-                if def_ns is None:
-                    continue
-
+            # This defence hasn't been brought up yet.
+            if d is None:
                 next_step = {
                     'paragraphs': denied_paragraphs,
-                    'next_step': def_ns['next_step'],
+                    'next_step': defence,
                     'defence': defence,
-                    'data': def_ns.get('data', {}),
                 }
                 return next_step
+
+            # What to do if d isn't a BaseDefence instance?
+            # if not isinstance(d, BaseDefence):
+            #    del claim[defence]
+            assert isinstance(d, BaseDefence)
+
+            # If this defence is fully explored, move on.
+            def_ns = d.next_step()
+            if def_ns is None:
+                continue
+
+            next_step = {
+                'paragraphs': denied_paragraphs,
+                'next_step': def_ns['next_step'],
+                'defence': defence,
+                'data': def_ns.get('data', {}),
+            }
+            return next_step
 
         # done iterating over claims and defences, now for general questions
         if 'is_defamatory' not in self.data:
