@@ -59,7 +59,7 @@ function send_post(destination, data, cb_success, cb_fail) {
     };
 
     dialog.msg_into_element = function (el, text) {
-        const regex = /([^)]*)\[([^\]]+)\]\(([^)]+)\)([^\[]+)/g;
+        const regex = /(.*?)\[([^\]]+)\]\(([^)]+)\)([^\[]+)/g;
         let m;
         let link;
 
