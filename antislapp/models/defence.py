@@ -467,14 +467,15 @@ class Defence:
         denied_paragraphs = index.join_list(denied_paragraphs_list)
         prev_d_model = None
         prev_quote = " "
+        d_model = None
         for defence in Defence.DEFENCES:
             defences = self.get_defences()
             d_model = defences.get(defence, None)
 
             if prev_d_model and prev_d_model.applicable is True:
-                prev_quote = "Great, I've attached the {} defence to your statement.\n".format(prev_d_model.name)
+                prev_quote = "Great, I've attached the {} defence to your statement.\\n".format(prev_d_model.name)
             elif prev_d_model:
-                prev_quote = "I've left out the {} defence.\n".format(prev_d_model.name)
+                prev_quote = "I've left out the {} defence.\\n".format(prev_d_model.name)
 
             # This defence hasn't been brought up yet.
             if d_model is None:
@@ -507,6 +508,10 @@ class Defence:
                 'data': data,
             }
             return next_step
+        if d_model and d_model.applicable is True:
+            prev_quote = "Great, I've attached the {} defence to your statement.\\n".format(prev_d_model.name)
+        elif d_model:
+            prev_quote = "I've left out the {} defence.\\n".format(prev_d_model.name)
 
         # done iterating over claims and defences, now for general questions
         if 'is_defamatory' not in self.data:
