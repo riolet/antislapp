@@ -466,13 +466,13 @@ class Defence:
 
         denied_paragraphs = index.join_list(denied_paragraphs_list)
         prev_d_model = None
-        prev_quote = "CC"
+        prev_quote = " "
         for defence in Defence.DEFENCES:
             defences = self.get_defences()
             d_model = defences.get(defence, None)
 
             if prev_d_model and prev_d_model.applicable is True:
-                prev_quote = "I've written in the {} defence.\n".format(prev_d_model.name)
+                prev_quote = "Great, I've attached the {} defence to your statement.\n".format(prev_d_model.name)
             elif prev_d_model:
                 prev_quote = "I've left out the {} defence.\n".format(prev_d_model.name)
 
