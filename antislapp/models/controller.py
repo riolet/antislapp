@@ -58,11 +58,11 @@ class Controller:
         next_step = self.defence.get_next_step()
         # next_question has .claim_id, .acc, .qst OR is None
         if next_step is None:
-            self.response['followupEvent'] = {'name': 'trigger-summary', 'data': {'preface': ''}}
+            self.response['followupEvent'] = {'name': 'trigger-summary', 'data': {'preface': 'BB'}}
         else:
             data = next_step.pop('data', {})
             if 'preface' not in data:
-                data['preface'] = ''
+                data['preface'] = 'AA'
             step = next_step.pop('next_step', 'report')
             self.response['contextOut'] = [{
                 'name': 'currentacc',

@@ -466,7 +466,7 @@ class Defence:
 
         denied_paragraphs = index.join_list(denied_paragraphs_list)
         prev_d_model = None
-        prev_quote = ""
+        prev_quote = "CC"
         for defence in Defence.DEFENCES:
             defences = self.get_defences()
             d_model = defences.get(defence, None)
