@@ -465,40 +465,53 @@ class Defence:
             return next_step
 
         denied_paragraphs = index.join_list(denied_paragraphs_list)
+        prev_d_model = None
+        prev_quote = ""
         for defence in Defence.DEFENCES:
             defences = self.get_defences()
-            d = defences.get(defence, None)
+            d_model = defences.get(defence, None)
+
+            if prev_d_model and prev_d_model.applicable is True:
+                prev_quote = "I've written in the {} defence.\n".format(prev_d_model.name)
+            elif prev_d_model:
+                prev_quote = "I've left out the {} defence.\n".format(prev_d_model.name)
 
             # This defence hasn't been brought up yet.
-            if d is None:
+            if d_model is None:
                 next_step = {
                     'paragraphs': denied_paragraphs,
                     'next_step': defence,
                     'defence': defence,
+                    'data': {'preface': prev_quote}
                 }
                 return next_step
 
             # What to do if d isn't a BaseDefence instance?
             # if not isinstance(d, BaseDefence):
             #    del claim[defence]
-            assert isinstance(d, BaseDefence)
+            assert isinstance(d_model, BaseDefence)
 
             # If this defence is fully explored, move on.
-            def_ns = d.next_step()
+            def_ns = d_model.next_step()
             if def_ns is None:
+                prev_d_model = d_model
                 continue
+
+            data = def_ns.get('data', {})
+            data['preface'] = prev_quote
 
             next_step = {
                 'paragraphs': denied_paragraphs,
                 'next_step': def_ns['next_step'],
                 'defence': defence,
-                'data': def_ns.get('data', {}),
+                'data': data,
             }
             return next_step
 
         # done iterating over claims and defences, now for general questions
         if 'is_defamatory' not in self.data:
-            next_step = {'next_step': 'check-defamatory'}
+            next_step = {'next_step': 'check-defamatory',
+                         'data': {'preface': prev_quote}}
             return next_step
         elif 'is_damaging' not in self.data:
             next_step = {'next_step': 'check-damaging'}

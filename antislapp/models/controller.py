@@ -175,7 +175,6 @@ class Controller:
 
     def report(self):
         report = self.defence.report()
-        form = FormS2600(self.cid)
 
         # if any paragraphs are missing from the pleadings, mention them here
         missing_paragraphs = self.get_missing_numbers([claim['paragraph'] for claim in self.defence.get_claims()])
@@ -184,6 +183,8 @@ class Controller:
                       "all allegation paragraphs are accounted for in paragraphs 1, 2, or 3 of Part 1 Division 1 in " \
                       "your defence below.".format(index.join_list(missing_paragraphs))
 
+        # fill out the statement of defence
+        form = FormS2600(self.cid)
         if self.defence.get_defendant() is not None:
             form.defendant = self.defence.get_defendant()
         if self.defence.get_plaintiff() is not None:
@@ -222,7 +223,6 @@ class Controller:
         steps.write()
         report = report + "\n\nDownload your Defence Guide " \
                           "[{}{}](here).".format(self.domain, steps.get_link())
-
 
         # advice for next steps
         offer_advice = False
