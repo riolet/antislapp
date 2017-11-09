@@ -181,8 +181,8 @@ class Controller:
         missing_paragraphs = self.get_missing_numbers([claim['paragraph'] for claim in self.defence.get_claims()])
         if missing_paragraphs:
             report += "\n\nSome paragraph numbers ({}) of allegations made seem to be missing. It is important that " \
-                      "all allegation paragraphs are accounted for in paragraphs ".format(
-                index.join_list(missing_paragraphs))
+                      "all allegation paragraphs are accounted for in paragraphs 1, 2, or 3 of Part 1 Division 1 in " \
+                      "your defence below.".format(index.join_list(missing_paragraphs))
 
         if self.defence.get_defendant() is not None:
             form.defendant = self.defence.get_defendant()
