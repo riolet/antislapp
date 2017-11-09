@@ -56,7 +56,7 @@ p + p {
 /*
   =======  Content Layout  =======
 */
-.wrapper {
+.wrapper, .endorsement {
   padding: 0;
   max-width: 1127px;
   margin: auto;
@@ -65,7 +65,6 @@ p + p {
   justify-content: center;
 }
 .infoside {
-  /*background: cyan;*/
   padding: 10px;
   flex: 1 50%;
 }
@@ -78,7 +77,6 @@ p + p {
   text-align: center;
 }
 .chatside {
-  /*background: teal;*/
   padding: 0;
   flex: 1 auto;
   position: relative;
@@ -108,7 +106,7 @@ p + p {
   height: 2em;
   font-family: sans;
 }
-img, iframe {
+.chatwrap img, iframe {
   position: relative;
   top: -80px;
 }
@@ -182,4 +180,48 @@ img, iframe {
   color: #666;
   font-size: 1.1em;
   padding: 0 1em;
+}
+/*
+  =======  Endorsement  =======
+*/
+div.endorsement {
+  margin-top: 4em;
+  display: block;
+  padding: 0 5em;
+}
+.endorsement div {
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+.endorsement img {
+  display: block;
+  margin: auto;
+}
+.endorsement .image {
+  float: left;
+  padding: 1em 2em;
+}
+.endorsement .content {
+  padding: 1em 2em;
+}
+.endorsement .citation {
+  font-style: italic;
+  text-align: right;
+}
+.clear {
+  clear: both;
+}
+@media all and (max-width: 700px) {
+  .endorsement .image {
+    margin: auto;
+    float: none;
+    padding-bottom: 0;
+  }
+  .endorsement .content {
+    padding-top: 0;
+  }
+  .endorsement {
+    padding: 0 2em;
+  }
 }
