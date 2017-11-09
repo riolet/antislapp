@@ -223,6 +223,14 @@ class Controller:
         report = report + "\n\nDownload your Defence Guide " \
                           "[{}{}](here).".format(self.domain, steps.get_link())
 
+
+        # advice for next steps
+        offer_advice = False
+        if offer_advice:
+            lawyer_name = "XYZ incorporated"
+            lawyer_site = "https://example.com"
+            report += "\n\nThe above documents are as far as I can take you. For additional support, I would recommend connecting with a legal representative from [{site}]({name}). Good luck to you!".format(name=lawyer_name, site=lawyer_site)
+
         self.response['speech'] = report
         self.response['displayText'] = report
 
