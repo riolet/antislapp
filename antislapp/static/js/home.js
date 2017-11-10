@@ -22,8 +22,10 @@ function send_post(destination, data, cb_success, cb_fail) {
     "use strict";
     let dialog = {
         converse_endpoint: "/converse",
+        ping_endpoint: "/ping",
         chatbox: null,
         chatinput: null,
+        ping_timer: null,
     };
 
     dialog.init = function () {
@@ -82,6 +84,16 @@ function send_post(destination, data, cb_success, cb_fail) {
         if (text.match(regex) === null) {
             el.innerText = text;
         }
+    };
+
+    dialog.send_ping = function () {
+        send_post(dialog.ping_endpoint, {}, dialog.pingback, dialog.post_fail);
+        //TODO: reset ping timer
+    };
+
+    dialog.pingback = function (response) {
+        console.log("ping complete: ");
+        console.log(JSON.parse(response))
     };
 
     dialog.user_presses_enter = function () {

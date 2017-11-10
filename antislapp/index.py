@@ -9,6 +9,10 @@ if not os.path.exists(os.path.dirname(DB_PATH)):
     os.makedirs(os.path.dirname(DB_PATH))
 sys.path.append(os.path.join(BASE_FOLDER, os.path.pardir))  # this could be executed from any directory
 
+CLIENT_ACCESS_TOKEN = os.environ.get('CLIENT_ACCESS_TOKEN', None)
+if CLIENT_ACCESS_TOKEN is None:
+    CLIENT_ACCESS_TOKEN = web.ctx.env.get('CLIENT_ACCESS_TOKEN', 'No Access Token')
+
 
 def parse_sql_string(script, replacements):
     # break into lines
@@ -49,7 +53,9 @@ def join_list(items):
 urls = ("/fulfill", "pages.fulfill.Fulfill",
         "/converse", "pages.converse.Converse",
 #        "/debug", "pages.debug.Debug",
-        "/.*", "pages.home.Home")
+        "/ping", "pages.ping.Ping",
+        "/.*", "pages.home.Home",
+)
 app = web.application(urls, globals())
 render = web.template.render(os.path.join(BASE_FOLDER, 'templates'))
 
