@@ -88,7 +88,7 @@ function send_post(destination, data, cb_success, cb_fail) {
 
     dialog.send_ping = function () {
         send_post(dialog.ping_endpoint, {}, dialog.pingback, dialog.post_fail);
-        //TODO: reset ping timer
+        dialog.ping_timer = setTimeout(dialog.send_ping, 1000*60*9);
     };
 
     dialog.pingback = function (response) {
@@ -108,6 +108,9 @@ function send_post(destination, data, cb_success, cb_fail) {
             "msg": msg
         };
         send_post(dialog.converse_endpoint, data, dialog.post_converse_return, dialog.post_fail);
+
+        clearTimeout(dialog.ping_timer);
+        dialog.ping_timer = setTimeout(dialog.send_ping, 1000*60*9);
     };
 
     dialog.post_converse_return = function (response) {
