@@ -19,7 +19,7 @@ class SuitSteps:
         title = self.writer.bold("1. Bringing a claim:")
         progress = self.writer.italic(" Complete")
         content = "This is the statement of claim that they brought against you. " \
-                  "It means you have been sued and started this process."
+                  "It means you have been sued and it started this process."
         return "{}{}\n\n{}".format(title, progress, content)
 
     def step2(self):
