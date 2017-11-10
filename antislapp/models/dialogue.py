@@ -1,15 +1,9 @@
-import os
 import web
 import json
 import apiai
 import base64
 import random
 from antislapp import index
-
-
-CLIENT_ACCESS_TOKEN = os.environ.get('CLIENT_ACCESS_TOKEN', None)
-if CLIENT_ACCESS_TOKEN is None:
-    CLIENT_ACCESS_TOKEN = web.ctx.env.get('CLIENT_ACCESS_TOKEN', 'No Access Token')
 
 
 class Response:
@@ -111,7 +105,7 @@ class Dialogue:
         """
         self.session_id = session_id[:36]
         self.db = db
-        self.ai = apiai.ApiAI(CLIENT_ACCESS_TOKEN)
+        self.ai = apiai.ApiAI(index.CLIENT_ACCESS_TOKEN)
         self.lang = 'en'
 
     def send_message(self, msg):
