@@ -362,6 +362,12 @@ class Defence:
     def set_damaging(self, is_damaging):
         self.data['is_damaging'] = is_damaging
 
+    def set_antislapp(self, applicable):
+        self.data['antislapp'] = applicable
+
+    def get_antislapp(self):
+        return self.data.get('antislapp', False)
+
     def add_allegation(self, allegation, paragraph):
         self.data['claims'].append({
             'allegation': allegation,
@@ -442,6 +448,7 @@ class Defence:
             defence: ""  # optional
             data: {}  # optional
         """
+
         # plead all claims first.
         for claim_id, claim in enumerate(self.data['claims']):
             # Every claim needs to be pleaded one way or another.
@@ -524,6 +531,14 @@ class Defence:
         elif 'apology' not in self.data:
             next_step = {'next_step': 'check-apology'}
             return next_step
+
+        # can antislapp legislation apply?
+        if self.get_sued() is True:
+            next_step = {
+                'next_step': 'check-antislapp',
+            }
+            return next_step
+
         elif self.data['courtName'] is None:
             next_step = {'next_step': 'check-court'}
             return next_step

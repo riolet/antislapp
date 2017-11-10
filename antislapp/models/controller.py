@@ -31,6 +31,7 @@ class Controller:
             'Qualified Privilege': 'trigger-qualified',
             'Fair Comment': 'trigger-fair',
             'Responsible Communication': 'trigger-responsible',
+            'check-antislapp': 'trigger-antislapp',
             'check-defamatory': 'trigger-defamatory',
             'check-damaging': 'trigger-damaging',
             'check-apology': 'trigger-apology',
@@ -106,6 +107,10 @@ class Controller:
 
     def set_apology(self, params):
         self.defence.set_apology(params['happened'], params['date'], params['method'])
+        self.set_next_step()
+
+    def set_antislapp(self, ontario, public):
+        self.defence.set_antislapp(ontario and public)
         self.set_next_step()
 
     def set_court_name(self, court_name):
@@ -184,6 +189,13 @@ class Controller:
             report += "\n\nSome paragraph numbers ({}) of allegations made seem to be missing. It is important that " \
                       "all allegation paragraphs are accounted for in paragraphs 1, 2, or 3 of Part 1 Division 1 in " \
                       "your defence below.".format(index.join_list(missing_paragraphs))
+
+        # If antislapp legislation applies, mention that!
+        if self.defence.get_antislapp():
+            report += "\n\nSince you're being sued in Ontario, and it's about a matter of public interest, you can " \
+                      "request the court dismiss the proceeding in accordance with the Protection of Public " \
+                      "Participation Act (PPPA). This would be ideal, and a legal professional will be able to " \
+                      "help you."
 
         # fill out the statement of defence
         form = FormS2600(self.cid)
