@@ -191,7 +191,7 @@ class Controller:
                       "your defence below.".format(index.join_list(missing_paragraphs))
 
         # If antislapp legislation applies, mention that!
-        if self.defence.get_antislapp():
+        if self.defence.get_antislapp() is True:
             report += "\n\nSince you're being sued in Ontario, and it's about a matter of public interest, you can " \
                       "request the court dismiss the proceeding in accordance with the Protection of Public " \
                       "Participation Act (PPPA). This would be ideal, and a legal professional will be able to " \

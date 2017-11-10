@@ -366,7 +366,7 @@ class Defence:
         self.data['antislapp'] = applicable
 
     def get_antislapp(self):
-        return self.data.get('antislapp', False)
+        return self.data.get('antislapp', None)
 
     def add_allegation(self, allegation, paragraph):
         self.data['claims'].append({
@@ -533,7 +533,7 @@ class Defence:
             return next_step
 
         # can antislapp legislation apply?
-        if self.get_sued() is True:
+        if self.get_sued() is True and self.get_antislapp() is None:
             next_step = {
                 'next_step': 'check-antislapp',
             }
