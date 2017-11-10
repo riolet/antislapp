@@ -24,11 +24,8 @@ class Ping:
     def process_request(self, request):
         context_model = Contexts(index.session['session_id'])
         contexts = context_model.get()
-        answer = {
-            'msg': contexts.status_code,
-            'data': contexts.content
-        }
-        return answer
+        response = context_model.set(contexts)
+        return response
 
     def prepare_response(self, response):
         outbound = json.dumps(response)
