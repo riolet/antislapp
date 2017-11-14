@@ -48,9 +48,9 @@ def join_list(items):
 
 urls = ("/fulfill", "pages.fulfill.Fulfill",
         "/converse", "pages.converse.Converse",
-#        "/debug", "pages.debug.Debug",
+        # "/debug", "pages.debug.Debug",
         "/ping", "pages.ping.Ping",
-        "/.*", "pages.home.Home",
+        "/", "pages.home.Home",
 )
 app = web.application(urls, globals())
 render = web.template.render(os.path.join(BASE_FOLDER, 'templates'))
