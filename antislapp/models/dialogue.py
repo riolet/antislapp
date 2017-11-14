@@ -1,3 +1,4 @@
+import os
 import web
 import json
 import apiai
@@ -103,9 +104,15 @@ class Dialogue:
         :type session_id: str
         :type db: web.DB
         """
+        self.token = os.environ.get('CLIENT_ACCESS_TOKEN', None)
+        if self.token is None:
+            if 'env' in web.ctx and 'CLIENT_ACCESS_TOKEN' in web.ctx.env:
+                self.token = web.ctx.env['CLIENT_ACCESS_TOKEN']
+            else:
+                self.token = 'No Access Token'
         self.session_id = session_id[:36]
         self.db = db
-        self.ai = apiai.ApiAI(index.CLIENT_ACCESS_TOKEN)
+        self.ai = apiai.ApiAI(self.token)
         self.lang = 'en'
 
     def send_message(self, msg):

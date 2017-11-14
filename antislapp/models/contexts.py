@@ -1,3 +1,5 @@
+import os
+import web
 import apiai
 import requests
 from antislapp import index
@@ -9,7 +11,12 @@ class Contexts():
         self.base_url = "https://api.dialogflow.com/v1"
         self.endpoint = "/contexts"
         self.session_id = session_id[:36]
-        self.token = index.CLIENT_ACCESS_TOKEN
+        self.token = os.environ.get('CLIENT_ACCESS_TOKEN', None)
+        if self.token is None:
+            if 'env' in web.ctx and 'CLIENT_ACCESS_TOKEN' in web.ctx.env:
+                self.token = web.ctx.env['CLIENT_ACCESS_TOKEN']
+            else:
+                self.token = 'No Access Token'
 
     def get(self):
         url = "{}{}?sessionId={}".format(self.base_url, self.endpoint, self.session_id)
