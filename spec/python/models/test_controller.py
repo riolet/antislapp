@@ -11,21 +11,21 @@ def blank_controller():
 
 def test_sued():
     c = blank_controller()
-    assert c.defence.data['sued'] == None
-    assert c.defence.get_plaintiff() == None
+    assert c.defence.sued is None
+    assert c.defence.plaintiff is None
     c.set_sued(True, 'Bad Guy')
-    assert c.defence.data['sued'] == True
-    assert c.defence.get_plaintiff() == 'Bad Guy'
+    assert c.defence.sued is True
+    assert c.defence.plaintiff == 'Bad Guy'
     c.set_sued(False, 'Bad Guy2')
-    assert c.defence.data['sued'] == False
-    assert c.defence.get_plaintiff() == 'Bad Guy2'
+    assert c.defence.sued is False
+    assert c.defence.plaintiff == 'Bad Guy2'
 
 
 def test_defendant():
     c = blank_controller()
-    assert c.defence.get_defendant() is None
+    assert c.defence.defendant is None
     c.set_defendant('Test User')
-    assert c.defence.get_defendant() == 'Test User'
+    assert c.defence.defendant == 'Test User'
 
 
 def test_add_allegation():
@@ -252,11 +252,11 @@ def test_defamatory():
     c.done_facts({'parameters': {'defence': 'Truth'}})
     resp = c.get_response()
     assert resp['followupEvent']['name'] == 'trigger-defamatory'
-    assert c.defence.get_defamatory() is None
+    assert c.defence.defamatory is None
     c.set_defamatory(True)
-    assert c.defence.get_defamatory() is True
+    assert c.defence.defamatory is True
     c.set_defamatory(False)
-    assert c.defence.get_defamatory() is False
+    assert c.defence.defamatory is False
     resp = c.get_response()
     assert resp['followupEvent']['name'] == 'trigger-damaging'
 
@@ -278,11 +278,11 @@ def test_damaging():
     c.set_defamatory(True)
     resp = c.get_response()
     assert resp['followupEvent']['name'] == 'trigger-damaging'
-    assert c.defence.get_damaging() is None
+    assert c.defence.damaging is None
     c.set_damaging(True)
-    assert c.defence.get_damaging() is True
+    assert c.defence.damaging is True
     c.set_damaging(False)
-    assert c.defence.get_damaging() is False
+    assert c.defence.damaging is False
     resp = c.get_response()
     assert resp['followupEvent']['name'] == 'trigger-apology'
 
@@ -305,7 +305,7 @@ def test_apology():
     c.set_damaging(False)
     resp = c.get_response()
     assert resp['followupEvent']['name'] == 'trigger-apology'
-    assert c.defence.get_apology() == (False, "", "")
+    assert c.defence.get_apology() is None
     c.set_apology({'happened': True, 'date': 'TimeA', 'method': 'MethodA'})
     assert c.defence.get_apology() == (True, 'TimeA', 'MethodA')
     c.set_apology({'happened': False, 'date': 'TimeB', 'method': 'MethodB'})
@@ -333,10 +333,10 @@ def test_court_name():
     c.set_apology({'happened': True, 'date': 'TimeA', 'method': 'MethodA'})
     resp = c.get_response()
     assert resp['followupEvent']['name'] == 'trigger-court'
-    assert c.defence.get_court_name() is None
+    assert c.defence.court_name is None
     court_name = 'Wendigo Court of Sasquatchewan'
     c.set_court_name(court_name)
-    assert c.defence.get_court_name() == court_name
+    assert c.defence.court_name == court_name
     resp = c.get_response()
     assert resp['followupEvent']['name'] == 'trigger-summary'
 
@@ -361,15 +361,15 @@ def test_antislapp():
     c.set_apology({'happened': True, 'date': 'TimeA', 'method': 'MethodA'})
     resp = c.get_response()
     assert resp['followupEvent']['name'] == 'trigger-antislapp'
-    assert c.defence.get_antislapp() is None
+    assert c.defence.antislapp is None
     c.set_antislapp(False, False)
-    assert c.defence.get_antislapp() is False
+    assert c.defence.antislapp is False
     c.set_antislapp(True, False)
-    assert c.defence.get_antislapp() is False
+    assert c.defence.antislapp is False
     c.set_antislapp(False, True)
-    assert c.defence.get_antislapp() is False
+    assert c.defence.antislapp is False
     c.set_antislapp(True, True)
-    assert c.defence.get_antislapp() is True
+    assert c.defence.antislapp is True
     resp = c.get_response()
     assert resp['followupEvent']['name'] == 'trigger-court'
 

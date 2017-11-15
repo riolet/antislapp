@@ -765,9 +765,9 @@ def test_everything():
     assert response['speech'].count("Download") == 2
 
     c = controller.Controller(conversation, def_response)
-    assert c.defence.get_sued() == True
-    assert c.defence.get_plaintiff() == 'Bob'
-    assert c.defence.get_defendant() == 'Joe'
+    assert c.defence.sued == True
+    assert c.defence.plaintiff == 'Bob'
+    assert c.defence.defendant == 'Joe'
 
     assert c.defence.get_claims() == [
         {'allegation': 'issue A', 'paragraph': 9, 'plead': u'agree'},
@@ -781,8 +781,8 @@ def test_everything():
     defences = c.defence.get_defences()
     assert set(defences.keys()) == {'Truth', 'Absolute Privilege', 'Qualified Privilege', 'Fair Comment', 'Responsible Communication'}
 
-    assert c.defence.get_defamatory() is True
-    assert c.defence.get_damaging() is False
+    assert c.defence.defamatory is True
+    assert c.defence.damaging is False
     assert c.defence.get_apology() == (True, 'September 22, 2017', 'local newspaper')
-    assert c.defence.get_antislapp() is False
-    assert c.defence.get_court_name() == 'Appeals Court of Alberta'
+    assert c.defence.antislapp is False
+    assert c.defence.court_name == 'Appeals Court of Alberta'

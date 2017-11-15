@@ -43,9 +43,9 @@ def test_sued():
     d1.reset()
     d1.save()
     assert d1.report() == "In summary, you may have been sued."
-    d1.set_sued(True)
+    d1.sued = True
     assert d1.report() == "In summary, you have been sued."
-    d1.set_sued(False)
+    d1.sued = False
     assert d1.report() == "In summary, you have not been sued."
 
 
@@ -262,22 +262,24 @@ def test_determine_next_defence():
     assert d1.get_next_step() == {'data': {'preface': "I've left out the Responsible Communication defence."},
                                   'next_step': 'check-defamatory'}
 
-    d1.set_defamatory(True)
+    d1.defamatory = True
+    print("defamatory: ", d1.defamatory)
+    print("data: {}".format(d1.data))
     assert d1.get_next_step() == {'next_step': 'check-damaging'}
 
-    d1.set_damaging(False)
+    d1.damaging = False
     assert d1.get_next_step() == {'next_step': 'check-apology'}
 
     d1.set_apology(True, '2017-05-17', 'the newspaper')
     assert d1.get_next_step() == {'next_step': 'check-court'}
 
-    d1.set_court_name('Wendigo Court of Sasquatchewan')
+    d1.court_name = 'Wendigo Court of Sasquatchewan'
     assert d1.get_next_step() is None
 
-    d1.set_sued(True)
+    d1.sued = True
     assert d1.get_next_step() == {'next_step': 'check-antislapp'}
 
-    d1.set_antislapp(True)
+    d1.antislapp = True
     assert d1.get_next_step() is None
 
 
@@ -364,10 +366,10 @@ def test_report():
     d2 = Defence(db, 'convo2')
     d2.reset()
     d2.save()
-    d2.set_sued(True)
+    d2.sued = True
     report = d2.report()
     assert report == "In summary, you have been sued."
 
-    d2.set_sued(False)
+    d2.sued = False
     report = d2.report()
     assert report == "In summary, you have not been sued."
