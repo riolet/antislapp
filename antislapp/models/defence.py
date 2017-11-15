@@ -162,10 +162,12 @@ class AbsoluteDefence(BaseDefence):
         # if Q1 is True and at least one of Q2/Q3 are true.
         count_yes = 0
         count_no = 0
+        # (q2 is normal. The desired answer is "True")
         if self.extra_answers[1] is True:
             count_yes += 1
         elif self.extra_answers[1] is False:
             count_no += 1
+        # (q3 is inverse. The desired answer is "False")
         if self.extra_answers[2] is False:
             count_yes += 1
         elif self.extra_answers[2] is True:
@@ -356,11 +358,25 @@ class Defence:
             'method': method
         }
 
+    def get_apology(self):
+        if 'apology' in self.data and self.data['apology']['applicable'] is True:
+            date = self.data['apology']['date']
+            method = self.data['apology']['method']
+            return True, date, method
+        else:
+            return False, "", ""
+
     def set_defamatory(self, is_defamatory):
         self.data['is_defamatory'] = is_defamatory
 
+    def get_defamatory(self):
+        return self.data.get('is_defamatory', None)
+
     def set_damaging(self, is_damaging):
         self.data['is_damaging'] = is_damaging
+
+    def get_damaging(self):
+        return self.data.get('is_damaging', None)
 
     def set_antislapp(self, applicable):
         self.data['antislapp'] = applicable
@@ -424,7 +440,6 @@ class Defence:
     def get_withheld(self):
         withheld = []
         for claim in self.data['claims']:
-            print claim
             if claim['plead'] == 'withhold' or claim['plead'] is None:
                 withheld.append(claim)
         return withheld

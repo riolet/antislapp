@@ -97,12 +97,12 @@ class Controller:
         self.defence.done_facts(defence)
         self.set_next_step()
 
-    def set_damaging(self, damaging):
-        self.defence.set_damaging(damaging)
-        self.set_next_step()
-
     def set_defamatory(self, defamatory):
         self.defence.set_defamatory(defamatory)
+        self.set_next_step()
+
+    def set_damaging(self, damaging):
+        self.defence.set_damaging(damaging)
         self.set_next_step()
 
     def set_apology(self, params):
@@ -135,9 +135,11 @@ class Controller:
 
             numstrings = fnum.split(",")
             for numstring in numstrings:
-                if numstring.strip().isdigit():
-                    numbers.append(int(numstring))
+                try:
+                    numbers.append(int(float(numstring)))
                     continue
+                except:
+                    pass
                 # ranges of form 1..3 or 1-3 with spaces anywhere
                 match = re.match(r'\s*(\d+)\s*(?:-+|\.\.+)\s*(\d+)\s*', numstring)
                 if match:
@@ -208,14 +210,9 @@ class Controller:
         form.claims_unanswered = self.defence.get_withheld()
         form.claims_denied = self.defence.get_denied()
         form.claims_admitted = self.defence.get_agreed()
-        if 'apology' in self.defence.data and self.defence.data['apology']['applicable'] is True:
-            form.apology_given = True
-            form.apology_date = self.defence.data['apology']['date']
-            form.apology_method = self.defence.data['apology']['method']
-        else:
-            form.apology_given = False
-        form.was_damaging = self.defence.data.get('is_damaging', None)
-        form.was_defamatory = self.defence.data.get('is_defamatory', None)
+        form.apology_given, form.apology_date, form.apology_method = self.defence.get_apology()
+        form.was_damaging = self.defence.get_damaging()
+        form.was_defamatory = self.defence.get_defamatory()
 
         defences = self.defence.get_defences()
         defence_paragraphs = []
