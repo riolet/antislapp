@@ -51,7 +51,7 @@ The server side needs to serve the python files.  Several options are available 
     1. `sudo git clone https://github.com/riolet/antislapp.git`
     1. `chown -R www-data: /var/www/antislapp`
     1. `sudo pip install -r /var/www/antislapp/requirements.txt`
-1. Site configuration. Https is necessary but full site configuration is beyond the scope of these instructions. Make sure your site includes the following:
+1. Configure your website. Https is necessary but full site configuration is beyond the scope of these instructions. Make sure your site includes the following:
     1. Note the CLIENT_ACCESS_TOKEN parameter below. You will need to replace that with your own token, from your dialogflow agent settings.
 ```
 location / {
@@ -80,7 +80,28 @@ location /static/ {
     }
 }
 ``` 
-8. reload nginx and start up fcgi
+8. Reload nginx and start up fcgi
     1. `sudo nginx -s reload` To enable your site
     1. `spawn-fcgi -d /var/www/antislapp/antislapp -f /var/www/antislapp/antislapp/index.py -a 127.0.0.1 -p 9002` To enable fcgi to run your python scripts
+        1. It would be wise to incorporate this command into a startup script. This depends on your system is also outside the scope of these instructions. 
 9. Your website should be good to go now. Make sure it works if you connect at http**s**://&lt;your-site&gt;.com
+
+### Running the Chat Server Locally (Optional)
+
+The fulfillment server needs to be able to respond to secure public requests, but the chat server (the page the user sees) can be run locally
+
+This is useful for developing the website quickly and bypassing the requirements of being a public secure server.
+
+1. Clone the repository to a local folder
+1. Enter the repository folder (/antislapp)
+1. (optional) install a virtual environment for python packages
+    1. `virtualenv env`  (this command may be different for you)
+    1. `source env/bin/activate` (this command may be different for you)
+1. Install the required packages
+    1. `pip install -r requirements`
+1. Using the "Client Access Token" from your dialogflow agent settings, add it to your environment variables
+    1. `export CLIENT_ACCESS_TOKEN=a1b2c3d4e5f6g7h8ij9`
+1. Enter the inner antislapp folder and run the webserver
+    1. `cd antislapp`
+    1. `python index.py`
+1. Navigate your browser to http://localhost:8080
