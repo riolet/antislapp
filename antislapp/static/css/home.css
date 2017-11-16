@@ -50,6 +50,9 @@ html {
   position: relative;
   margin: 0;
 }
+.footrest p {
+  padding: 0;
+}
 p {
   text-indent: 1em;
 }

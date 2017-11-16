@@ -1,4 +1,4 @@
-#AntiSLAPP
+# AntiSLAPP
 
 AntiSLAPP is an open source legal defender that can assist an individual with 
 putting together a defence against a defamation lawsuit in Canadian jurisdiction.
