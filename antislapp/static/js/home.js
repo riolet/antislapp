@@ -22,8 +22,10 @@ function send_post(destination, data, cb_success, cb_fail) {
     "use strict";
     let dialog = {
         converse_endpoint: "/converse",
+        ping_endpoint: "/ping",
         chatbox: null,
         chatinput: null,
+        ping_timer: null,
     };
 
     dialog.init = function () {
@@ -84,6 +86,16 @@ function send_post(destination, data, cb_success, cb_fail) {
         }
     };
 
+    dialog.send_ping = function () {
+        send_post(dialog.ping_endpoint, {}, dialog.pingback, dialog.post_fail);
+        dialog.ping_timer = setTimeout(dialog.send_ping, 1000*60*9);
+    };
+
+    dialog.pingback = function (response) {
+        console.log("ping complete: ");
+        console.log(JSON.parse(response))
+    };
+
     dialog.user_presses_enter = function () {
         let msg = dialog.chatinput.value;
         dialog.add_user_message(msg);
@@ -96,6 +108,9 @@ function send_post(destination, data, cb_success, cb_fail) {
             "msg": msg
         };
         send_post(dialog.converse_endpoint, data, dialog.post_converse_return, dialog.post_fail);
+
+        clearTimeout(dialog.ping_timer);
+        dialog.ping_timer = setTimeout(dialog.send_ping, 1000*60*9);
     };
 
     dialog.post_converse_return = function (response) {

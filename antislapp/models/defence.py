@@ -162,10 +162,12 @@ class AbsoluteDefence(BaseDefence):
         # if Q1 is True and at least one of Q2/Q3 are true.
         count_yes = 0
         count_no = 0
+        # (q2 is normal. The desired answer is "True")
         if self.extra_answers[1] is True:
             count_yes += 1
         elif self.extra_answers[1] is False:
             count_no += 1
+        # (q3 is inverse. The desired answer is "False")
         if self.extra_answers[2] is False:
             count_yes += 1
         elif self.extra_answers[2] is True:
@@ -253,7 +255,8 @@ def defence_ctor(state):
     }[state['name']](state)
 
 
-class Defence:
+# needs to be new-style class, for properties
+class Defence(object):
     TABLE = 'conversations'
     DEFENCES = ['Truth', 'Absolute Privilege', 'Qualified Privilege', 'Fair Comment', 'Responsible Communication']
     PLEADS = ['agree', 'deny', 'withhold']
@@ -318,55 +321,84 @@ class Defence:
             self.db.delete(Defence.TABLE, where='conversation_id=$cid', vars={'cid': self.cid})
             self.db.insert(Defence.TABLE, conversation_id=self.cid, data=pickled_data, atime=now)
 
-    def get_sued(self):
+    @property
+    def sued(self):
         return self.data['sued']
 
-    def set_sued(self, sued):
-        self.data['sued'] = bool(sued)
+    @sued.setter
+    def sued(self, value):
+        self.data['sued'] = bool(value)
 
-    def get_defendant(self):
+    @property
+    def defendant(self):
         return self.data['defendant']
 
-    def set_defendant(self, name):
-        if len(name) > 0:
+    @defendant.setter
+    def defendant(self, name):
+        if name and len(name) > 0:
             self.data['defendant'] = name
 
-    def get_plaintiff(self):
+    @property
+    def plaintiff(self):
         return self.data['plaintiff']
 
-    def set_plaintiff(self, name):
-        if len(name) > 0:
+    @plaintiff.setter
+    def plaintiff(self, name):
+        if name and len(name) > 0:
             self.data['plaintiff'] = name
 
-    def get_court_name(self):
+    @property
+    def court_name(self):
         return self.data['courtName']
 
-    def set_court_name(self, court_name):
+    @court_name.setter
+    def court_name(self, court_name):
         self.data['courtName'] = court_name
+
+    def get_apology(self):
+        if 'apology' in self.data:
+            if self.data['apology']['applicable'] is True:
+                date = self.data['apology']['date']
+                method = self.data['apology']['method']
+                return True, date, method
+            else:
+                return False, "", ""
+        else:
+            return None
 
     def set_apology(self, happened, date, method):
         try:
             date = datetime.strptime(date, "%Y-%m-%d").strftime("%B %d, %Y")
         except:
             pass
-
         self.data['apology'] = {
             'applicable': happened,
             'date': date,
             'method': method
         }
 
-    def set_defamatory(self, is_defamatory):
+    @property
+    def defamatory(self):
+        return self.data.get('is_defamatory', None)
+    @defamatory.setter
+    def defamatory(self, is_defamatory):
         self.data['is_defamatory'] = is_defamatory
 
-    def set_damaging(self, is_damaging):
+    @property
+    def damaging(self):
+        return self.data.get('is_damaging', None)
+
+    @damaging.setter
+    def damaging(self, is_damaging):
         self.data['is_damaging'] = is_damaging
 
-    def set_antislapp(self, applicable):
-        self.data['antislapp'] = applicable
-
-    def get_antislapp(self):
+    @property
+    def antislapp(self):
         return self.data.get('antislapp', None)
+
+    @antislapp.setter
+    def antislapp(self, applicable):
+        self.data['antislapp'] = applicable
 
     def add_allegation(self, allegation, paragraph):
         self.data['claims'].append({
@@ -424,7 +456,6 @@ class Defence:
     def get_withheld(self):
         withheld = []
         for claim in self.data['claims']:
-            print claim
             if claim['plead'] == 'withhold' or claim['plead'] is None:
                 withheld.append(claim)
         return withheld
@@ -521,19 +552,19 @@ class Defence:
             prev_quote = "I've left out the {} defence.".format(prev_d_model.name)
 
         # done iterating over claims and defences, now for general questions
-        if 'is_defamatory' not in self.data:
+        if self.defamatory is None:
             next_step = {'next_step': 'check-defamatory',
                          'data': {'preface': prev_quote}}
             return next_step
-        elif 'is_damaging' not in self.data:
+        elif self.damaging is None:
             next_step = {'next_step': 'check-damaging'}
             return next_step
-        elif 'apology' not in self.data:
+        elif self.get_apology() is None:
             next_step = {'next_step': 'check-apology'}
             return next_step
 
         # can antislapp legislation apply?
-        if self.get_sued() is True and self.get_antislapp() is None:
+        if self.sued is True and self.antislapp is None:
             next_step = {
                 'next_step': 'check-antislapp',
             }
@@ -544,9 +575,9 @@ class Defence:
             return next_step
 
     def report(self):
-        if self.get_sued() is None:
+        if self.sued is None:
             sued = "may have "
-        elif self.get_sued() is True:
+        elif self.sued is True:
             sued = "have "
         else:
             sued = "have not "

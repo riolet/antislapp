@@ -40,12 +40,12 @@ class Controller:
         }
 
     def set_sued(self, sued, plaintiff):
-        self.defence.set_sued(sued)
+        self.defence.sued = sued
         if plaintiff is not None:
-            self.defence.set_plaintiff(plaintiff)
+            self.defence.plaintiff = plaintiff
 
     def set_defendant(self, name):
-        self.defence.set_defendant(name)
+        self.defence.defendant = name
 
     def add_allegation(self, allegation, paragraph):
         return self.defence.add_allegation(allegation, paragraph)
@@ -97,12 +97,12 @@ class Controller:
         self.defence.done_facts(defence)
         self.set_next_step()
 
-    def set_damaging(self, damaging):
-        self.defence.set_damaging(damaging)
+    def set_defamatory(self, defamatory):
+        self.defence.defamatory = defamatory
         self.set_next_step()
 
-    def set_defamatory(self, defamatory):
-        self.defence.set_defamatory(defamatory)
+    def set_damaging(self, damaging):
+        self.defence.damaging = damaging
         self.set_next_step()
 
     def set_apology(self, params):
@@ -110,11 +110,11 @@ class Controller:
         self.set_next_step()
 
     def set_antislapp(self, ontario, public):
-        self.defence.set_antislapp(ontario and public)
+        self.defence.antislapp = ontario and public
         self.set_next_step()
 
     def set_court_name(self, court_name):
-        self.defence.set_court_name(court_name)
+        self.defence.court_name = court_name
         self.set_next_step()
 
     def boolean_answer(self, context, answer):
@@ -135,9 +135,11 @@ class Controller:
 
             numstrings = fnum.split(",")
             for numstring in numstrings:
-                if numstring.strip().isdigit():
-                    numbers.append(int(numstring))
+                try:
+                    numbers.append(int(float(numstring)))
                     continue
+                except:
+                    pass
                 # ranges of form 1..3 or 1-3 with spaces anywhere
                 match = re.match(r'\s*(\d+)\s*(?:-+|\.\.+)\s*(\d+)\s*', numstring)
                 if match:
@@ -191,7 +193,7 @@ class Controller:
                       "your defence below.".format(index.join_list(missing_paragraphs))
 
         # If antislapp legislation applies, mention that!
-        if self.defence.get_antislapp() is True:
+        if self.defence.antislapp is True:
             report += "\n\nSince you're being sued in Ontario, and it's about a matter of public interest, you can " \
                       "request the court dismiss the proceeding in accordance with the Protection of Public " \
                       "Participation Act (PPPA). This would be ideal, and a legal professional will be able to " \
@@ -199,23 +201,18 @@ class Controller:
 
         # fill out the statement of defence
         form = FormS2600(self.cid)
-        if self.defence.get_defendant() is not None:
-            form.defendant = self.defence.get_defendant()
-        if self.defence.get_plaintiff() is not None:
-            form.plaintiff = self.defence.get_plaintiff()
-        if self.defence.get_court_name() is not None:
-            form.court_name = self.defence.get_court_name()
+        if self.defence.defendant is not None:
+            form.defendant = self.defence.defendant
+        if self.defence.plaintiff is not None:
+            form.plaintiff = self.defence.plaintiff
+        if self.defence.court_name is not None:
+            form.court_name = self.defence.court_name
         form.claims_unanswered = self.defence.get_withheld()
         form.claims_denied = self.defence.get_denied()
         form.claims_admitted = self.defence.get_agreed()
-        if 'apology' in self.defence.data and self.defence.data['apology']['applicable'] is True:
-            form.apology_given = True
-            form.apology_date = self.defence.data['apology']['date']
-            form.apology_method = self.defence.data['apology']['method']
-        else:
-            form.apology_given = False
-        form.was_damaging = self.defence.data.get('is_damaging', None)
-        form.was_defamatory = self.defence.data.get('is_defamatory', None)
+        form.apology_given, form.apology_date, form.apology_method = self.defence.get_apology()
+        form.was_damaging = self.defence.damaging
+        form.was_defamatory = self.defence.defamatory
 
         defences = self.defence.get_defences()
         defence_paragraphs = []
