@@ -83,4 +83,4 @@ location /static/ {
 8. reload nginx and start up fcgi
     1. `sudo nginx -s reload` To enable your site
     1. `spawn-fcgi -d /var/www/antislapp/antislapp -f /var/www/antislapp/antislapp/index.py -a 127.0.0.1 -p 9002` To enable fcgi to run your python scripts
-9. Your website should be good to go now. Make sure it works if you connect at http**s**://<your-site>.com
+9. Your website should be good to go now. Make sure it works if you connect at http**s**://&lt;your-site&gt;.com
