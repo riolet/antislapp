@@ -16,13 +16,13 @@ class Controller:
         self.response = {
             'speech': default_response,
             'displayText': default_response,
-            # 'event': {"name":"<event_name>","data":{"<parameter_name>":"<parameter_value>"}},
+            # 'followupEvent': {"name":"<event_name>","data":{"<parameter_name>":"<parameter_value>"}},
             # 'data': _,
             # 'contextOut': [{"name":"weather", "lifespan":2, "parameters":{"city":"Rome"}}],
-            # context name must be lowercase
+            #                         contextOut['name'] must be lowercase
             'source': 'riobot',
         }
-        self.defence_triggers = {
+        self.event_triggers = {
             'plead': 'trigger-plead',
             'question': 'trigger-bool',
             'facts': 'trigger-facts',
@@ -71,7 +71,7 @@ class Controller:
                 'parameters': next_step
             }]
             self.response['followupEvent'] = {
-                'name': self.defence_triggers[step],
+                'name': self.event_triggers[step],
                 'data': data
             }
         self.response.pop('speech', None)  # required to be absent
