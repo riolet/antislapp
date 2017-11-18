@@ -257,6 +257,11 @@ def defence_ctor(state):
 
 # needs to be new-style class, for properties
 class Defence(object):
+    """
+    This class stores/retrieves all defence-related data in the database for a single user.
+    This data includes names, allegations, pleadings, possible defences, and additional facts.
+
+    """
     TABLE = 'conversations'
     DEFENCES = ['Truth', 'Absolute Privilege', 'Qualified Privilege', 'Fair Comment', 'Responsible Communication']
     PLEADS = ['agree', 'deny', 'withhold']

@@ -7,6 +7,13 @@ from antislapp.models.definitions import definitions
 
 
 class Controller:
+    """
+    Invoked by pages/fulfill.
+    Responsibilities include:
+        Having a function that handles the request that comes out of fulfill
+        Building a response
+        Organizing any other classes involved. Generally just Defence, but sometimes a form or definition
+    """
     def __init__(self, conversation_id, default_response):
         self.cid = conversation_id
         # self.domain = "https://riobot.centralus.cloudapp.azure.com"
