@@ -177,4 +177,4 @@ class FormS2600:
     def get_link(self):
         path = self.path
         i = path.find("/static")
-        return path[i:]
+        return "." + path[i:]

@@ -16,7 +16,6 @@ class Controller:
     """
     def __init__(self, conversation_id, default_response):
         self.cid = conversation_id
-        # self.domain = "https://riobot.centralus.cloudapp.azure.com"
         self.domain = "https://antislapp.ca"
         self.default = default_response
         self.defence = Defence(index.db, self.cid)
@@ -259,14 +258,14 @@ class Controller:
 
         form.write()
         report = report + "\n\nDownload your Statement of Defence " \
-                          "[{}{}](here).".format(self.domain, form.get_link())
+                          "[{}](here).".format(self.domain, form.get_link())
 
         # steps
         steps = SuitSteps(self.cid)
         steps.populate(self.defence)
         steps.write()
         report = report + "\n\nDownload your Defence Guide " \
-                          "[{}{}](here).".format(self.domain, steps.get_link())
+                          "[{}](here).".format(self.domain, steps.get_link())
 
         # advice for next steps
         offer_advice = False
