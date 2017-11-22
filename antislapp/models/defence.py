@@ -275,7 +275,6 @@ class Defence(object):
             'defendant': None,
             'plaintiff': None,
             'courtName': None,
-            'claims': [],
             'defences': {},
         }
 
@@ -288,11 +287,6 @@ class Defence(object):
 
         try:
             data = cPickle.loads(str(row['data']))
-            for claim in data['claims']:
-                for Def_name, Def_state in claim.iteritems():
-                    if Def_name in Defence.DEFENCES:
-                        claim[Def_name] = defence_ctor(Def_state)
-
             now = int(time.time())
             self.db.update(Defence.TABLE, where='conversation_id=$cid', vars=qvars, atime=now)
             self.data = data
@@ -300,18 +294,7 @@ class Defence(object):
             traceback.print_exc()
 
     def save(self):
-        data = copy.copy(self.data)
-        claims = []
-        for self_claim in self.data['claims']:
-            claim = {}
-            for k, v in self_claim.iteritems():
-                if isinstance(v, BaseDefence):
-                    claim[k] = v.export_state()
-                else:
-                    claim[k] = v
-            claims.append(claim)
-        data['claims'] = claims
-        pickled_data = cPickle.dumps(data)
+        pickled_data = cPickle.dumps(self.data)
         now = int(time.time())
 
         with self.db.transaction():
