@@ -21,8 +21,8 @@ function send_post(destination, data, cb_success, cb_fail) {
 (function () {
     "use strict";
     let dialog = {
-        converse_endpoint: "/converse",
-        ping_endpoint: "/ping",
+        converse_endpoint: "./converse",
+        ping_endpoint: "./ping",
         chatbox: null,
         chatinput: null,
         ping_timer: null,
