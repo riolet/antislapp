@@ -70,18 +70,21 @@ class Controller:
             self.defence.agreed = []
         else:
             self.defence.agreed = Controller.group_ranges(Controller.string_to_numbers(allegation_string))
+        self.set_next_step()
 
     def set_allegations_deny(self, empty, allegation_string):
         if empty:
             self.defence.denied = []
         else:
             self.defence.denied = Controller.group_ranges(Controller.string_to_numbers(allegation_string))
+        self.set_next_step()
 
     def set_allegations_withhold(self, empty, allegation_string):
         if empty:
             self.defence.withheld = []
         else:
             self.defence.withheld = Controller.group_ranges(Controller.string_to_numbers(allegation_string))
+        self.set_next_step()
 
     def get_definition(self, term):
         dfn = definitions.get(term.lower(), "That term isn't in the dictionary")
@@ -109,12 +112,6 @@ class Controller:
             }
         self.response.pop('speech', None)  # required to be absent
         self.response.pop('displayText', None)  # required to be absent
-
-    def make_plea(self, context, params):
-        cid = int(float(context['parameters']['claim_id']))
-        # plead may be one of Defence.PLEADS ('agree', 'withhold', 'deny')
-        self.defence.plead(cid, params['plead'])
-        self.set_next_step()
 
     def defence_check(self, context, params):
         defence = context['parameters']['defence']
