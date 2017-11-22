@@ -14,11 +14,13 @@ from antislapp import index
 #   withheld = [7,8,9]
 #   defences = {
 #       TruthDefence:
-#           valid: true/false
+#           name: 'Truth'
+#           applicable: true/false
 #           facts: ['facts1', 'facts2']
 #           extra_questions/answers: [...]
 #       AbsoluteDefence:
-#           valid: ...
+#           name: 'Absolute Privilege'
+#           applicable: ...
 #           facts: [...]
 #           extra_questions/answers: [...]
 #       ...
@@ -508,6 +510,12 @@ class Defence(object):
             prev_quote = "Great, I've attached the {} defence to your statement.".format(prev_d_model.name)
         elif d_model:
             prev_quote = "I've left out the {} defence.".format(prev_d_model.name)
+
+        # They must have agreed to at least one of the defences
+        if not any(d.applicable for d in self.data['defences'].values()):
+            next_step = {'next_step': "exit-no-defence"}
+            return next_step
+
 
         # done iterating over claims and defences, now for general questions
         if self.defamatory is None:

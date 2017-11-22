@@ -42,6 +42,7 @@ class Controller:
             'check-apology': 'trigger-apology',
             'check-court': 'trigger-court',
             'exit-deny': 'trigger-exit-deny',
+            'exit-no-defence': 'trigger-exit-nodef',
             'check-agreed': 'trigger-pleas-true',
             'check-denied': 'trigger-pleas-false',
             'check-withheld': 'trigger-pleas-none',
