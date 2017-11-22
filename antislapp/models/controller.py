@@ -258,14 +258,14 @@ class Controller:
 
         form.write()
         report = report + "\n\nDownload your Statement of Defence " \
-                          "[{}](here).".format(self.domain, form.get_link())
+                          "[{}](here).".format(form.get_link())
 
         # steps
         steps = SuitSteps(self.cid)
         steps.populate(self.defence)
         steps.write()
         report = report + "\n\nDownload your Defence Guide " \
-                          "[{}](here).".format(self.domain, steps.get_link())
+                          "[{}](here).".format(steps.get_link())
 
         # advice for next steps
         offer_advice = False
