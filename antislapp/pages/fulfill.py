@@ -64,6 +64,10 @@ class Fulfill:
             contexts[ctx['name']] = ctx
         return contexts
 
+    @staticmethod
+    def extract_resolvedQuery(data):
+        return data.get('result', {}).get('resolvedQuery', '')
+
     def decode_inbound(self, inbound):
         try:
             data = json.loads(inbound)
@@ -72,6 +76,7 @@ class Fulfill:
         params = Fulfill.extract_parameters(data)
         def_response = Fulfill.extract_default_response(data)
         action = Fulfill.extract_action(data)
+        query = Fulfill.extract_resolvedQuery(data)
         cid = data.get('sessionId', None)
         if cid is None:
             raise ValueError
@@ -83,7 +88,8 @@ class Fulfill:
             'default': def_response,
             'action': action,
             'conversation_id': cid,
-            'contexts': contexts
+            'contexts': contexts,
+            'query': query,
         }
         return request
 
@@ -96,12 +102,14 @@ class Fulfill:
             controller.set_sued(request['params']['sued'], request['params'].get('name', None))
         elif action == 'get_name':
             controller.set_defendant(request['params']['name'])
-        elif action == 'get_allegations':
-            controller.add_allegation(request['params']['allegation'], request['params']['paragraph'])
-        elif action == 'plead':
-            controller.make_plea(request['contexts']['currentacc'], request['params'])
-        elif action == 'done_allegations':
+        elif action == 'next_step':
             controller.set_next_step()
+        elif action == 'pleas-true':
+            controller.set_allegations_agree(request['params']['empty'], request['query'])
+        elif action == 'pleas-false':
+            controller.set_allegations_deny(request['params']['empty'], request['query'])
+        elif action == 'pleas-none':
+            controller.set_allegations_withhold(request['params']['empty'], request['query'])
         elif action in ('check-truth', 'check-absolute', 'check-qualified', 'check-fair', 'check-responsible'):
             controller.defence_check(request['contexts']['currentacc'], request['params'])
         elif action == 'fact':

@@ -9,17 +9,9 @@ from antislapp import index
 # data looks like:
 # data:
 #   sued = True/False
-#   claims = [
-#       {allegation: blah blah X
-#       paragraph: "4"
-#       plead: agree/deny/withhold
-#       ...
-#       },
-#       {allegation: blah blah Y
-#        ...
-#       },
-#       {allegation: blah blah Z
-#       ...}
+#   agreed = [1,2,3]
+#   denied = [4,5,6]
+#   withheld = [7,8,9]
 #   defences = {
 #       TruthDefence:
 #           valid: true/false
@@ -405,24 +397,32 @@ class Defence(object):
     def antislapp(self, applicable):
         self.data['antislapp'] = applicable
 
-    def add_allegation(self, allegation, paragraph):
-        self.data['claims'].append({
-            'allegation': allegation,
-            'paragraph': paragraph,
-            'plead': None
-        })
-        return len(self.data['claims']) - 1
-
     def get_claims(self):
         return self.data.get('claims', [])
 
-    def plead(self, claim_id, plead):
-        # Raises IndexError if claim_id is missing.
-        # Raises ValueError if plead isn't one of Defence.PLEADS.
-        context = self.data['claims'][claim_id]
-        if plead not in Defence.PLEADS:
-            raise ValueError("Plead must be one of {}".format(Defence.PLEADS))
-        context['plead'] = plead
+    @property
+    def agreed(self):
+        return self.data.get('agreed', None)
+
+    @agreed.setter
+    def agreed(self, value):
+        self.data['agreed'] = value
+
+    @property
+    def denied(self):
+        return self.data.get('denied', None)
+
+    @denied.setter
+    def denied(self, value):
+        self.data['denied'] = value
+
+    @property
+    def withheld(self):
+        return self.data.get('withheld', None)
+
+    @withheld.setter
+    def withheld(self, value):
+        self.data['withheld'] = value
 
     def add_defence(self, defence, applicable):
         # Raises ValueError if defence isn't one of Defence.DEFENCES
@@ -451,27 +451,6 @@ class Defence(object):
         defence_model = self.data['defences'][defence]
         defence_model.facts_done = True
 
-    def get_agreed(self):
-        agreed = []
-        for claim in self.data['claims']:
-            if claim.get('plead', 'withhold') == 'agree':
-                agreed.append(claim)
-        return agreed
-
-    def get_withheld(self):
-        withheld = []
-        for claim in self.data['claims']:
-            if claim['plead'] == 'withhold' or claim['plead'] is None:
-                withheld.append(claim)
-        return withheld
-
-    def get_denied(self):
-        denied = []
-        for claim in self.data['claims']:
-            if claim.get('plead', 'withhold') == 'deny':
-                denied.append(claim)
-        return denied
-
     def get_next_step(self):
         """
         possible next steps include:
@@ -485,29 +464,23 @@ class Defence(object):
             data: {}  # optional
         """
 
-        # plead all claims first.
-        for claim_id, claim in enumerate(self.data['claims']):
-            # Every claim needs to be pleaded one way or another.
-            if claim['plead'] is None:
-                next_step = {
-                    'claim_id': claim_id,
-                    'allegation': claim['allegation'],
-                    'next_step': 'plead',
-                }
-                return next_step
-            # Only claims that are denied have followup questions
-            if claim['plead'] != 'deny':
-                continue
-
-        # Inquire about each possible defence.
-        denied_paragraphs_list = [str(claim['paragraph']) for claim in self.get_denied()]
-        if len(denied_paragraphs_list) == 0:
-            next_step = {
-                'next_step': "exit-deny",
-            }
+        # get everything agreed, denied, and withheld
+        if self.agreed is None:
+            next_step = {'next_step': 'check-agreed'}
+            return next_step
+        if self.denied is None:
+            next_step = {'next_step': 'check-denied'}
+            return next_step
+        if self.withheld is None:
+            next_step = {'next_step': 'check-withheld'}
             return next_step
 
-        denied_paragraphs = index.join_list(denied_paragraphs_list)
+        # Inquire about each possible defence.
+        if self.denied is not None and len(self.denied) == 0:
+            next_step = {'next_step': "exit-deny"}
+            return next_step
+
+        denied_paragraphs = index.join_list(self.denied)
         prev_d_model = None
         prev_quote = " "
         d_model = None

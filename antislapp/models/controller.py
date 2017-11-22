@@ -30,7 +30,6 @@ class Controller:
             'source': 'riobot',
         }
         self.event_triggers = {
-            'plead': 'trigger-plead',
             'question': 'trigger-bool',
             'facts': 'trigger-facts',
             'Truth': 'trigger-truth',
@@ -44,18 +43,45 @@ class Controller:
             'check-apology': 'trigger-apology',
             'check-court': 'trigger-court',
             'exit-deny': 'trigger-exit-deny',
+            'check-agreed': 'trigger-pleas-true',
+            'check-denied': 'trigger-pleas-false',
+            'check-withheld': 'trigger-pleas-none',
         }
 
     def set_sued(self, sued, plaintiff):
         self.defence.sued = sued
         if plaintiff is not None:
             self.defence.plaintiff = plaintiff
+        self.set_next_step()
+        if sued:
+            preface = "There are a few ways to respond to a suit, including trying to settle, or blame someone else." \
+                      " This AI will walk you through putting together a \"Statement of Defence.\" That's the next " \
+                      "step for defending yourself in court."
+        else:
+            preface = "Ok, we'll continue as a hypothetical scenario. This AI can walk you through putting together " \
+                      "a \"Statement of Defence.\" That's the next step towards you defending yourself in court."
+        self.response.get('followupEvent', {}).get('data', {})['preface'] = preface
 
     def set_defendant(self, name):
         self.defence.defendant = name
 
-    def add_allegation(self, allegation, paragraph):
-        return self.defence.add_allegation(allegation, paragraph)
+    def set_allegations_agree(self, empty, allegation_string):
+        if empty:
+            self.defence.agreed = []
+        else:
+            self.defence.agreed = Controller.group_ranges(Controller.string_to_numbers(allegation_string))
+
+    def set_allegations_deny(self, empty, allegation_string):
+        if empty:
+            self.defence.denied = []
+        else:
+            self.defence.denied = Controller.group_ranges(Controller.string_to_numbers(allegation_string))
+
+    def set_allegations_withhold(self, empty, allegation_string):
+        if empty:
+            self.defence.withheld = []
+        else:
+            self.defence.withheld = Controller.group_ranges(Controller.string_to_numbers(allegation_string))
 
     def get_definition(self, term):
         dfn = definitions.get(term.lower(), "That term isn't in the dictionary")
@@ -133,6 +159,25 @@ class Controller:
         self.defence.update_defence(defence, info)
         self.set_next_step()
 
+    @staticmethod
+    def string_to_numbers(string):
+        matches = re.findall(r'\d+\s*-+\s*\d+|\d+\s*\.\.+\s*\d+|\d+', string)
+        print("string matches: {}".format(matches))
+        numbers = []
+        for m in matches:
+            try:
+                numbers.append(int(float(m)))
+                continue
+            except:
+                pass
+            # ranges of form 1..3 or 1-3 with spaces anywhere
+            match = re.match(r'\s*(\d+)\s*(?:-+|\.\.+)\s*(\d+)\s*', m)
+            if match:
+                a = int(match.group(1))
+                b = int(match.group(2))
+                numbers.extend(range(min(a, b), max(a, b) + 1))
+        return numbers
+
     def get_missing_numbers(self, found_numbers):
         numbers = []
         for fnum in found_numbers:
@@ -162,7 +207,8 @@ class Controller:
         groups = self.group_ranges(missing)
         return groups
 
-    def group_ranges(self, numbers):
+    @staticmethod
+    def group_ranges(numbers):
         # turns lists like [3,2,7,6,8] and [1,2,3,4,6,7,9,10]
         # into lists like ['2-3', '6-8'] and ['1-4', '6-7', '9-10']
         if len(numbers) == 0:
@@ -214,9 +260,9 @@ class Controller:
             form.plaintiff = self.defence.plaintiff
         if self.defence.court_name is not None:
             form.court_name = self.defence.court_name
-        form.claims_unanswered = self.defence.get_withheld()
-        form.claims_denied = self.defence.get_denied()
-        form.claims_admitted = self.defence.get_agreed()
+        form.claims_unanswered = self.defence.withheld
+        form.claims_denied = self.defence.denied
+        form.claims_admitted = self.defence.agreed
         form.apology_given, form.apology_date, form.apology_method = self.defence.get_apology()
         form.was_damaging = self.defence.damaging
         form.was_defamatory = self.defence.defamatory
