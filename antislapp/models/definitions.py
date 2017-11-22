@@ -1,5 +1,5 @@
 # coding=utf-8
-#Source: http://www.manitobacourts.mb.ca/general-information/definitions-understanding-legal-words/
+# Source: http://www.manitobacourts.mb.ca/general-information/definitions-understanding-legal-words/
 
 definitions = {
     'adjournment': 'the postponement of a court proceeding or session until another date; may be with a specified date '
@@ -77,8 +77,12 @@ definitions = {
              'appeal judges before whom a case was heard;',
     'costs': 'see Solicitor and Clients Costs or Party and party Costs;',
     'counsel': 'to advise or persuade a person; another term for lawyer as in “legal counsel”;',
-    'cefendant': 'in a civil case, the person who is being sued and in a criminal case may be used in place of '
+    'defendant': 'in a civil case, the person who is being sued and in a criminal case may be used in place of '
                  'the “accused”;',
+    'defamatory': 'Defamation is communication about a person that tends to hurt the person’s reputation. It causes '
+                  'the reader or listener to think less of the person. The communication must be made to other people, '
+                  'not just to the person it’s about. If defamation is spoken, then it is called slander. If it is '
+                  'written, it is called libel. It can also be a gesture, which is a type of slander.',
     'defamation': 'Defamation is communication about a person that tends to hurt the person’s reputation. It causes '
                   'the reader or listener to think less of the person. The communication must be made to other people, '
                   'not just to the person it’s about. If defamation is spoken, then it is called slander. If it is '
