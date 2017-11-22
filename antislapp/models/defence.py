@@ -559,9 +559,9 @@ class Defence(object):
             sued = "have "
         else:
             sued = "have not "
-        agrees = index.join_list([claim['paragraph'] for claim in self.get_agreed()])
-        withholds = index.join_list([claim['paragraph'] for claim in self.get_withheld()])
-        denies = index.join_list([claim['paragraph'] for claim in self.get_denied()])
+        agrees = index.join_list(self.agreed)
+        withholds = index.join_list(self.withheld)
+        denies = index.join_list(self.denied)
         p_agree = "You agree with the claims in paragraphs {}. ".format(agrees)
         p_withhold = "You cannot respond to claims in paragraphs {}. ".format(withholds)
         p_deny = "You deny the allegations in paragraphs {}. ".format(denies)
