@@ -380,9 +380,6 @@ class Defence(object):
     def antislapp(self, applicable):
         self.data['antislapp'] = applicable
 
-    def get_claims(self):
-        return self.data.get('claims', [])
-
     @property
     def agreed(self):
         return self.data.get('agreed', None)

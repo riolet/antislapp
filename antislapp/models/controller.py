@@ -175,31 +175,12 @@ class Controller:
                 numbers.extend(range(min(a, b), max(a, b) + 1))
         return numbers
 
-    def get_missing_numbers(self, found_numbers):
-        numbers = []
-        for fnum in found_numbers:
-            if type(fnum) in (float, int):
-                numbers.append(int(fnum))
-                continue
-
-            numstrings = fnum.split(",")
-            for numstring in numstrings:
-                try:
-                    numbers.append(int(float(numstring)))
-                    continue
-                except:
-                    pass
-                # ranges of form 1..3 or 1-3 with spaces anywhere
-                match = re.match(r'\s*(\d+)\s*(?:-+|\.\.+)\s*(\d+)\s*', numstring)
-                if match:
-                    a = int(match.group(1))
-                    b = int(match.group(2))
-                    numbers.extend(range(min(a, b), max(a, b) + 1))
-
-        highest = max(numbers)
+    def get_missing_numbers(self, num_list):
+        num_list = set(num_list)
+        highest = max(num_list)
         missing = []
         for i in range(1, highest):
-            if i not in numbers:
+            if i not in num_list:
                 missing.append(i)
         groups = self.group_ranges(missing)
         return groups
@@ -236,7 +217,9 @@ class Controller:
         report = self.defence.report()
 
         # if any paragraphs are missing from the pleadings, mention them here
-        missing_paragraphs = self.get_missing_numbers([claim['paragraph'] for claim in self.defence.get_claims()])
+        paragraphs = ", ".join(self.defence.denied + self.defence.agreed + self.defence.withheld)
+        paragraph_numbers = Controller.string_to_numbers(paragraphs)
+        missing_paragraphs = self.get_missing_numbers(paragraph_numbers)
         if missing_paragraphs:
             report += "\n\nSome paragraph numbers ({}) of allegations made seem to be missing. It is important that " \
                       "all allegation paragraphs are accounted for in paragraphs 1, 2, or 3 of Part 1 Division 1 in " \
