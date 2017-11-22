@@ -68,7 +68,7 @@ class FormS2600:
         # Division 1
         paragraph = 'paragraph' if len(self.claims_admitted) == 1 else 'paragraphs'
         if self.claims_admitted:
-            numbers = index.join_list([str(claim['paragraph']) for claim in self.claims_admitted])
+            numbers = index.join_list(map(str, self.claims_admitted))
         else:
             numbers = "NIL"
         p_agree = "The facts alleged in {} {} of Part 1 of the notice of civil claim are admitted."\
@@ -76,7 +76,7 @@ class FormS2600:
 
         paragraph = 'paragraph' if len(self.claims_denied) == 1 else 'paragraphs'
         if self.claims_denied:
-            numbers = index.join_list([str(claim['paragraph']) for claim in self.claims_denied])
+            numbers = index.join_list(map(str, self.claims_denied))
         else:
             numbers = 'NIL'
         p_deny = "The facts alleged in {} {} of Part 1 of the notice of civil claim are denied."\
@@ -84,7 +84,7 @@ class FormS2600:
 
         paragraph = 'paragraph' if len(self.claims_unanswered) == 1 else 'paragraphs'
         if self.claims_unanswered:
-            numbers = index.join_list([str(claim['paragraph']) for claim in self.claims_unanswered])
+            numbers = index.join_list(map(str, self.claims_unanswered))
         else:
             numbers = 'NIL'
         p_withheld = 'The facts alleged in {} {} of Part 1 of the notice of civil claim are outside the knowledge of the defendant {}'\
@@ -102,7 +102,7 @@ class FormS2600:
         in_the_alternative = False
         alternative = "Further, and in the alternative, "
         paragraph = 'paragraphs' if len(self.claims_denied) > 1 else 'paragraph'
-        numbers = index.join_list([str(claim['paragraph']) for claim in self.claims_denied])
+        numbers = index.join_list(map(str, self.claims_denied))
         not_alternative = "Regarding allegations in {para} {numbers}, ".format(para=paragraph, numbers=numbers)
 
 
